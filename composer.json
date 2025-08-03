@@ -1,0 +1,70 @@
+{
+    "name": "roadrunner/psr-logger",
+    "type": "library",
+    "description": "PSR Logger for RoadRunner",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Anton Titov",
+            "homepage": "https://github.com/wolfy-j"
+        },
+        {
+            "name": "Aleksei Gagarin",
+            "homepage": "https://github.com/roxblnfk"
+        },
+        {
+            "name": "Pavel Buchnev",
+            "homepage": "https://github.com/butschster"
+        },
+        {
+            "name": "RoadRunner Community",
+            "homepage": "https://github.com/roadrunner-php/psr-logger/graphs/contributors"
+        }
+    ],
+    "homepage": "https://spiral.dev/",
+    "support": {
+        "docs": "https://docs.roadrunner.dev",
+        "issues": "https://github.com/roadrunner-php/psr-logger/issues",
+        "chat": "https://discord.gg/V6EK4he"
+    },
+    "require": {
+        "php": ">=8.1",
+        "ext-json": "*",
+        "psr/log": "^2.0 || ^3.0",
+        "roadrunner-php/app-logger": "^1.2"
+    },
+    "require-dev": {
+        "buggregator/trap": "^1.13",
+        "phpunit/phpunit": "^10.5.45",
+        "spiral/code-style": "^2.2",
+        "ta-tikoma/phpunit-architecture-test": "^0.8.5",
+        "vimeo/psalm": "^6.10"
+    },
+    "scripts": {
+        "cs:diff": "php-cs-fixer fix --dry-run -v --diff --show-progress dots",
+        "cs:fix": "php-cs-fixer fix -v",
+        "test": "phpunit",
+        "psalm": "psalm"
+    },
+    "autoload": {
+        "psr-4": {
+            "RoadRunner\\PsrLogger\\": "src"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "RoadRunner\\PsrLogger\\Tests\\": "tests"
+        }
+    },
+    "funding": [
+        {
+            "type": "github",
+            "url": "https://github.com/sponsors/roadrunner-server"
+        }
+    ],
+    "config": {
+        "sort-packages": true
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}
