@@ -11,19 +11,17 @@ use Psr\Log\InvalidArgumentException as PsrInvalidArgumentException;
 use Psr\Log\LogLevel as PsrLogLevel;
 use RoadRunner\Logger\Logger as AppLogger;
 use RoadRunner\PsrLogger\RpcLogger;
-use Spiral\Goridge\RPC\CodecInterface;
-use Spiral\Goridge\RPC\RPCInterface;
 
 #[CoversClass(RpcLogger::class)]
 class RpcLoggerTest extends TestCase
 {
-    private TestRPC $rpc;
+    private RpcSpy $rpc;
     private AppLogger $appLogger;
     private RpcLogger $rpcLogger;
 
     protected function setUp(): void
     {
-        $this->rpc = new TestRPC();
+        $this->rpc = new RpcSpy();
         $this->appLogger = new AppLogger($this->rpc);
         $this->rpcLogger = new RpcLogger($this->appLogger);
     }
@@ -342,44 +340,5 @@ class RpcLoggerTest extends TestCase
             'notice' => [PsrLogLevel::NOTICE],
             'info' => [PsrLogLevel::INFO],
         ];
-    }
-}
-
-/**
- * Test spy for capturing RPC calls
- */
-class TestRPC implements RPCInterface
-{
-    public array $calls = [];
-
-    public function call(string $method, mixed $payload, mixed $options = null): mixed
-    {
-        $this->calls[] = ['method' => $method, 'payload' => $payload, 'options' => $options];
-        return null;
-    }
-
-    public function withCodec(CodecInterface $codec): RPCInterface
-    {
-        return $this;
-    }
-
-    public function withServicePrefix(string $service): RPCInterface
-    {
-        return $this;
-    }
-
-    public function getLastCall(): ?array
-    {
-        return end($this->calls) ?: null;
-    }
-
-    public function getCallCount(): int
-    {
-        return count($this->calls);
-    }
-
-    public function reset(): void
-    {
-        $this->calls = [];
     }
 }
