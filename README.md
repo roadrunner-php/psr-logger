@@ -25,15 +25,12 @@ composer require roadrunner/psr-logger
 ### Basic Setup
 
 ```php
-<?php
-
 use RoadRunner\Logger\Logger as AppLogger;
 use RoadRunner\PsrLogger\RpcLogger;
-use Spiral\RoadRunner\WorkerInterface;
 
 // Initialize the RoadRunner app logger
-$worker = RoadRunner\Worker::create();
-$appLogger = new AppLogger($worker);
+$rpc = \Spiral\Goridge\RPC\RPC::create('127.0.0.1:6001');
+$appLogger = new AppLogger($rpc);
 
 // Create the PSR-3 compatible logger
 $logger = new RpcLogger($appLogger);
