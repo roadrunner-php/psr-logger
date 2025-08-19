@@ -29,32 +29,20 @@ class RpcLogger implements LoggerInterface
      */
     public function log($level, \Stringable|string $message, array $context = []): void
     {
-        $normalizedLevel = \is_string($level) ? \strtolower($level) : (string) $level;
+        $normalizedLevel = $level instanceof \BackedEnum
+            ? \strtolower((string) $level->value)
+            : \strtolower((string) $level);
 
         /** @var array<string, mixed> $context */
-        switch ($normalizedLevel) {
-            case PsrLogLevel::EMERGENCY:
-            case PsrLogLevel::ALERT:
-            case PsrLogLevel::CRITICAL:
-            case PsrLogLevel::ERROR:
-                $this->logger->error($message, $context);
-                return;
-
-            case PsrLogLevel::WARNING:
-                $this->logger->warning($message, $context);
-                return;
-
-            case PsrLogLevel::NOTICE:
-            case PsrLogLevel::INFO:
-                $this->logger->info((string) $message, $context);
-                return;
-
-            case PsrLogLevel::DEBUG:
-                $this->logger->debug($message, $context);
-                return;
-
-            default:
-                throw new PsrInvalidArgumentException('Invalid log level: ' . $normalizedLevel);
-        }
+        match ($normalizedLevel) {
+            PsrLogLevel::EMERGENCY,
+            PsrLogLevel::ALERT,
+            PsrLogLevel::CRITICAL,
+            PsrLogLevel::ERROR => $this->logger->error($message, $context),
+            PsrLogLevel::WARNING => $this->logger->warning($message, $context),
+            PsrLogLevel::NOTICE, PsrLogLevel::INFO => $this->logger->info((string) $message, $context),
+            PsrLogLevel::DEBUG => $this->logger->debug($message, $context),
+            default => throw new PsrInvalidArgumentException("Invalid log level `$level` provided."),
+        };
     }
 }

@@ -153,10 +153,19 @@ class RpcLoggerTest extends TestCase
         $this->assertInstanceOf(\RoadRunner\AppLogger\DTO\V1\LogEntry::class, $lastCall['payload']);
     }
 
+    public function testLogWithEnumLevel(): void
+    {
+        $this->rpcLogger->log(LogLevelEnum::Warning, 'Test message');
+
+        $this->assertSame(1, $this->rpc->getCallCount());
+        $lastCall = $this->rpc->getLastCall();
+        $this->assertSame('Warning', $lastCall['method']);
+    }
+
     public function testLogWithInvalidLevel(): void
     {
         $this->expectException(PsrInvalidArgumentException::class);
-        $this->expectExceptionMessage('Invalid log level: invalid');
+        $this->expectExceptionMessage('Invalid log level `invalid` provided.');
 
         $this->rpcLogger->log('invalid', 'Test message');
     }
@@ -164,7 +173,7 @@ class RpcLoggerTest extends TestCase
     public function testLogWithNonStringLevel(): void
     {
         $this->expectException(PsrInvalidArgumentException::class);
-        $this->expectExceptionMessage('Invalid log level: 123');
+        $this->expectExceptionMessage('Invalid log level `123` provided.');
 
         $this->rpcLogger->log(123, 'Test message');
     }
@@ -172,7 +181,7 @@ class RpcLoggerTest extends TestCase
     public function testLogWithNullLevel(): void
     {
         $this->expectException(PsrInvalidArgumentException::class);
-        $this->expectExceptionMessage('Invalid log level: ');
+        $this->expectExceptionMessage('Invalid log level `` provided.');
 
         $this->rpcLogger->log(null, 'Test message');
     }
@@ -180,7 +189,7 @@ class RpcLoggerTest extends TestCase
     public function testLogWithBooleanLevel(): void
     {
         $this->expectException(PsrInvalidArgumentException::class);
-        $this->expectExceptionMessage('Invalid log level: 1');
+        $this->expectExceptionMessage('Invalid log level `1` provided.');
 
         $this->rpcLogger->log(true, 'Test message');
     }
