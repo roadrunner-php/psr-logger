@@ -10,6 +10,7 @@ use PHPUnit\Framework\TestCase;
 use Psr\Log\InvalidArgumentException as PsrInvalidArgumentException;
 use Psr\Log\LogLevel as PsrLogLevel;
 use RoadRunner\Logger\Logger as AppLogger;
+use RoadRunner\Logger\LogLevel;
 use RoadRunner\PsrLogger\RpcLogger;
 
 #[CoversClass(RpcLogger::class)]
@@ -162,6 +163,15 @@ class RpcLoggerTest extends TestCase
         $this->assertSame('Warning', $lastCall['method']);
     }
 
+    public function testLogWithRREnumLogLevel(): void
+    {
+        $this->rpcLogger->log(LogLevel::Log, 'Test message');
+
+        $this->assertSame(1, $this->rpc->getCallCount());
+        $lastCall = $this->rpc->getLastCall();
+        $this->assertSame('Log', $lastCall['method']);
+    }
+
     public function testLogWithInvalidLevel(): void
     {
         $this->expectException(PsrInvalidArgumentException::class);
@@ -173,7 +183,7 @@ class RpcLoggerTest extends TestCase
     public function testLogWithNonStringLevel(): void
     {
         $this->expectException(PsrInvalidArgumentException::class);
-        $this->expectExceptionMessage('Invalid log level `123` provided.');
+        $this->expectExceptionMessage('Invalid log level type provided.');
 
         $this->rpcLogger->log(123, 'Test message');
     }
@@ -181,7 +191,7 @@ class RpcLoggerTest extends TestCase
     public function testLogWithNullLevel(): void
     {
         $this->expectException(PsrInvalidArgumentException::class);
-        $this->expectExceptionMessage('Invalid log level `` provided.');
+        $this->expectExceptionMessage('Invalid log level type provided.');
 
         $this->rpcLogger->log(null, 'Test message');
     }
@@ -189,7 +199,7 @@ class RpcLoggerTest extends TestCase
     public function testLogWithBooleanLevel(): void
     {
         $this->expectException(PsrInvalidArgumentException::class);
-        $this->expectExceptionMessage('Invalid log level `1` provided.');
+        $this->expectExceptionMessage('Invalid log level type provided.');
 
         $this->rpcLogger->log(true, 'Test message');
     }
