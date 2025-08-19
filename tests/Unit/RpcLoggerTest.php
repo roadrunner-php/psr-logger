@@ -10,6 +10,7 @@ use PHPUnit\Framework\TestCase;
 use Psr\Log\InvalidArgumentException as PsrInvalidArgumentException;
 use Psr\Log\LogLevel as PsrLogLevel;
 use RoadRunner\Logger\Logger as AppLogger;
+use RoadRunner\Logger\LogLevel;
 use RoadRunner\PsrLogger\RpcLogger;
 
 #[CoversClass(RpcLogger::class)]
@@ -19,11 +20,22 @@ class RpcLoggerTest extends TestCase
     private AppLogger $appLogger;
     private RpcLogger $rpcLogger;
 
-    protected function setUp(): void
+    public static function emergencyLevelsProvider(): array
     {
-        $this->rpc = new RpcSpy();
-        $this->appLogger = new AppLogger($this->rpc);
-        $this->rpcLogger = new RpcLogger($this->appLogger);
+        return [
+            'emergency' => [PsrLogLevel::EMERGENCY],
+            'alert' => [PsrLogLevel::ALERT],
+            'critical' => [PsrLogLevel::CRITICAL],
+            'error' => [PsrLogLevel::ERROR],
+        ];
+    }
+
+    public static function infoLevelsProvider(): array
+    {
+        return [
+            'notice' => [PsrLogLevel::NOTICE],
+            'info' => [PsrLogLevel::INFO],
+        ];
     }
 
     public function testConstructor(): void
@@ -142,10 +154,28 @@ class RpcLoggerTest extends TestCase
         $this->assertInstanceOf(\RoadRunner\AppLogger\DTO\V1\LogEntry::class, $lastCall['payload']);
     }
 
+    public function testLogWithEnumLevel(): void
+    {
+        $this->rpcLogger->log(LogLevelEnum::Warning, 'Test message');
+
+        $this->assertSame(1, $this->rpc->getCallCount());
+        $lastCall = $this->rpc->getLastCall();
+        $this->assertSame('Warning', $lastCall['method']);
+    }
+
+    public function testLogWithRREnumLogLevel(): void
+    {
+        $this->rpcLogger->log(LogLevel::Log, 'Test message');
+
+        $this->assertSame(1, $this->rpc->getCallCount());
+        $lastCall = $this->rpc->getLastCall();
+        $this->assertSame('Log', $lastCall['method']);
+    }
+
     public function testLogWithInvalidLevel(): void
     {
         $this->expectException(PsrInvalidArgumentException::class);
-        $this->expectExceptionMessage('Invalid log level: invalid');
+        $this->expectExceptionMessage('Invalid log level `invalid` provided.');
 
         $this->rpcLogger->log('invalid', 'Test message');
     }
@@ -153,7 +183,7 @@ class RpcLoggerTest extends TestCase
     public function testLogWithNonStringLevel(): void
     {
         $this->expectException(PsrInvalidArgumentException::class);
-        $this->expectExceptionMessage('Invalid log level: 123');
+        $this->expectExceptionMessage('Invalid log level type provided.');
 
         $this->rpcLogger->log(123, 'Test message');
     }
@@ -161,7 +191,7 @@ class RpcLoggerTest extends TestCase
     public function testLogWithNullLevel(): void
     {
         $this->expectException(PsrInvalidArgumentException::class);
-        $this->expectExceptionMessage('Invalid log level: ');
+        $this->expectExceptionMessage('Invalid log level type provided.');
 
         $this->rpcLogger->log(null, 'Test message');
     }
@@ -169,7 +199,7 @@ class RpcLoggerTest extends TestCase
     public function testLogWithBooleanLevel(): void
     {
         $this->expectException(PsrInvalidArgumentException::class);
-        $this->expectExceptionMessage('Invalid log level: 1');
+        $this->expectExceptionMessage('Invalid log level type provided.');
 
         $this->rpcLogger->log(true, 'Test message');
     }
@@ -324,21 +354,10 @@ class RpcLoggerTest extends TestCase
         $this->assertSame('InfoWithContext', $lastCall['method']);
     }
 
-    public static function emergencyLevelsProvider(): array
+    protected function setUp(): void
     {
-        return [
-            'emergency' => [PsrLogLevel::EMERGENCY],
-            'alert' => [PsrLogLevel::ALERT],
-            'critical' => [PsrLogLevel::CRITICAL],
-            'error' => [PsrLogLevel::ERROR],
-        ];
-    }
-
-    public static function infoLevelsProvider(): array
-    {
-        return [
-            'notice' => [PsrLogLevel::NOTICE],
-            'info' => [PsrLogLevel::INFO],
-        ];
+        $this->rpc = new RpcSpy();
+        $this->appLogger = new AppLogger($this->rpc);
+        $this->rpcLogger = new RpcLogger($this->appLogger);
     }
 }
