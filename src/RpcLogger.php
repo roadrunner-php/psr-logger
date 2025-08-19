@@ -23,8 +23,9 @@ class RpcLogger implements LoggerInterface
     }
 
     /**
-     * @param non-empty-string|\Stringable|\BackedEnum|LogLevel $level
+     * @param mixed $level
      * @param array<array-key, mixed> $context
+     * @psalm-assert non-empty-string|\Stringable|\BackedEnum|LogLevel $level
      *
      * @link https://www.php-fig.org/psr/psr-3/#5-psrlogloglevel
      */
