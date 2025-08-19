@@ -19,11 +19,22 @@ class RpcLoggerTest extends TestCase
     private AppLogger $appLogger;
     private RpcLogger $rpcLogger;
 
-    protected function setUp(): void
+    public static function emergencyLevelsProvider(): array
     {
-        $this->rpc = new RpcSpy();
-        $this->appLogger = new AppLogger($this->rpc);
-        $this->rpcLogger = new RpcLogger($this->appLogger);
+        return [
+            'emergency' => [PsrLogLevel::EMERGENCY],
+            'alert' => [PsrLogLevel::ALERT],
+            'critical' => [PsrLogLevel::CRITICAL],
+            'error' => [PsrLogLevel::ERROR],
+        ];
+    }
+
+    public static function infoLevelsProvider(): array
+    {
+        return [
+            'notice' => [PsrLogLevel::NOTICE],
+            'info' => [PsrLogLevel::INFO],
+        ];
     }
 
     public function testConstructor(): void
@@ -324,21 +335,10 @@ class RpcLoggerTest extends TestCase
         $this->assertSame('InfoWithContext', $lastCall['method']);
     }
 
-    public static function emergencyLevelsProvider(): array
+    protected function setUp(): void
     {
-        return [
-            'emergency' => [PsrLogLevel::EMERGENCY],
-            'alert' => [PsrLogLevel::ALERT],
-            'critical' => [PsrLogLevel::CRITICAL],
-            'error' => [PsrLogLevel::ERROR],
-        ];
-    }
-
-    public static function infoLevelsProvider(): array
-    {
-        return [
-            'notice' => [PsrLogLevel::NOTICE],
-            'info' => [PsrLogLevel::INFO],
-        ];
+        $this->rpc = new RpcSpy();
+        $this->appLogger = new AppLogger($this->rpc);
+        $this->rpcLogger = new RpcLogger($this->appLogger);
     }
 }

@@ -9,7 +9,7 @@ use Spiral\Goridge\RPC\RPCInterface;
 
 /**
  * RPC spy for capturing and inspecting RPC calls in unit tests.
- * 
+ *
  * This test double implements RPCInterface to allow testing of components
  * that depend on RPC communication without making actual RPC calls.
  * It records all method calls for later inspection and assertion.
@@ -36,12 +36,12 @@ class RpcSpy implements RPCInterface
 
     public function getLastCall(): ?array
     {
-        return end($this->calls) ?: null;
+        return \end($this->calls) ?: null;
     }
 
     public function getCallCount(): int
     {
-        return count($this->calls);
+        return \count($this->calls);
     }
 
     public function reset(): void
