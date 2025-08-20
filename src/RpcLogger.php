@@ -10,16 +10,19 @@ use Psr\Log\LogLevel as PsrLogLevel;
 use Psr\Log\InvalidArgumentException as PsrInvalidArgumentException;
 use RoadRunner\Logger\Logger as AppLogger;
 use RoadRunner\Logger\LogLevel;
+use RoadRunner\PsrLogger\ContextProcessor\ContextProcessorManager;
 
 class RpcLogger implements LoggerInterface
 {
     use LoggerTrait;
 
     private readonly AppLogger $logger;
+    private readonly ContextProcessorManager $contextProcessor;
 
-    public function __construct(AppLogger $logger)
+    public function __construct(AppLogger $logger, ?ContextProcessorManager $contextProcessor = null)
     {
         $this->logger = $logger;
+        $this->contextProcessor = $contextProcessor ?? new ContextProcessorManager();
     }
 
     /**
@@ -32,23 +35,25 @@ class RpcLogger implements LoggerInterface
     public function log($level, \Stringable|string $message, array $context = []): void
     {
         $normalizedLevel = \strtolower(match (true) {
-            \is_string($level),
+            \is_string($level) => $level,
             $level instanceof \Stringable => (string) $level,
             $level instanceof \BackedEnum => (string) $level->value,
             $level instanceof LogLevel => $level->name,
             default => throw new PsrInvalidArgumentException('Invalid log level type provided.'),
         });
 
-        /** @var array<string, mixed> $context */
+        // Process context data for structured logging using the processor manager
+        $processedContext = $this->contextProcessor->processContext($context);
+
         match ($normalizedLevel) {
             PsrLogLevel::EMERGENCY,
             PsrLogLevel::ALERT,
             PsrLogLevel::CRITICAL,
-            PsrLogLevel::ERROR => $this->logger->error($message, $context),
-            PsrLogLevel::WARNING => $this->logger->warning($message, $context),
-            PsrLogLevel::NOTICE, PsrLogLevel::INFO => $this->logger->info((string) $message, $context),
-            'log' => $this->logger->log((string) $message, $context),
-            PsrLogLevel::DEBUG => $this->logger->debug($message, $context),
+            PsrLogLevel::ERROR => $this->logger->error($message, $processedContext),
+            PsrLogLevel::WARNING => $this->logger->warning($message, $processedContext),
+            PsrLogLevel::NOTICE, PsrLogLevel::INFO => $this->logger->info((string) $message, $processedContext),
+            'log' => $this->logger->log((string) $message, $processedContext),
+            PsrLogLevel::DEBUG => $this->logger->debug($message, $processedContext),
             default => throw new PsrInvalidArgumentException("Invalid log level `$normalizedLevel` provided."),
         };
     }
