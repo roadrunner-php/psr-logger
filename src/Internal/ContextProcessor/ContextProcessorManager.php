@@ -82,19 +82,15 @@ class ContextProcessorManager
      */
     private function registerDefaultProcessors(): void
     {
-        // Null values first (most specific)
-        $this->addProcessor(new NullProcessor());
-
-        // Scalar values (very common, but after null)
-        $this->addProcessor(new ScalarProcessor());
+        // Built-in PHP types (null, scalar, array) - most common and efficient
+        $this->addProcessor(new BuiltInTypeProcessor());
 
         // Specific object types (before generic object processor)
         $this->addProcessor(new DateTimeProcessor());
         $this->addProcessor(new ThrowableProcessor());
         $this->addProcessor(new StringableProcessor());
 
-        // Collections and resources
-        $this->addProcessor(new ArrayProcessor());
+        // Resources
         $this->addProcessor(new ResourceProcessor());
 
         // Generic object processor (before fallback)

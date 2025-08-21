@@ -139,7 +139,7 @@ class ContextProcessorManagerTest extends TestCase
         $context = ['test' => 'custom:value'];
         $result = $this->manager->processContext($context);
 
-        // The string 'custom:value' will be processed by ScalarProcessor first since it's a string,
+        // The string 'custom:value' will be processed by BuiltInTypeProcessor first since it's a string,
         // so we expect the original value, not the processed one
         $this->assertSame(['test' => 'custom:value'], $result);
     }
