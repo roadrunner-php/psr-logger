@@ -43,7 +43,7 @@
     "scripts": {
         "cs:diff": "php-cs-fixer fix --dry-run -v --diff --show-progress dots",
         "cs:fix": "php-cs-fixer fix -v",
-        "test": "phpunit",
+        "test": "XDEBUG_MODE=coverage phpunit",
         "psalm": "psalm"
     },
     "autoload": {

@@ -2,12 +2,14 @@
 
 declare(strict_types=1);
 
-namespace RoadRunner\PsrLogger\ContextProcessor;
+namespace RoadRunner\PsrLogger\Internal\ContextProcessor;
 
 /**
  * Processor for resource types.
  *
  * Converts resources to string representation indicating the resource type.
+ *
+ * @internal This class is internal to the PSR Logger implementation and should not be used directly.
  *
  * @implements ContextProcessorInterface<resource, string>
  */

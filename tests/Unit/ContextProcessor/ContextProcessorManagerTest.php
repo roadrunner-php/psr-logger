@@ -6,8 +6,8 @@ namespace RoadRunner\PsrLogger\Tests\Unit\ContextProcessor;
 
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
-use RoadRunner\PsrLogger\ContextProcessor\ContextProcessorInterface;
-use RoadRunner\PsrLogger\ContextProcessor\ContextProcessorManager;
+use RoadRunner\PsrLogger\Internal\ContextProcessor\ContextProcessorInterface;
+use RoadRunner\PsrLogger\Internal\ContextProcessor\ContextProcessorManager;
 
 #[CoversClass(ContextProcessorManager::class)]
 class ContextProcessorManagerTest extends TestCase

@@ -2,13 +2,15 @@
 
 declare(strict_types=1);
 
-namespace RoadRunner\PsrLogger\ContextProcessor;
+namespace RoadRunner\PsrLogger\Internal\ContextProcessor;
 
 /**
  * Interface for context data processors.
  *
  * Each processor handles a specific type of data and converts it to a
  * format suitable for structured logging.
+ *
+ * @internal This interface is internal to the PSR Logger implementation and should not be used directly.
  *
  * @template TValue The input value type
  * @template TProcessed The processed output type

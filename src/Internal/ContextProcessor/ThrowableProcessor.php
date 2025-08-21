@@ -2,13 +2,15 @@
 
 declare(strict_types=1);
 
-namespace RoadRunner\PsrLogger\ContextProcessor;
+namespace RoadRunner\PsrLogger\Internal\ContextProcessor;
 
 /**
  * Processor for Exception and Throwable objects.
  *
  * Converts exceptions to structured data containing class, message,
  * code, file, line, and stack trace information.
+ *
+ * @internal This class is internal to the PSR Logger implementation and should not be used directly.
  *
  * @implements ContextProcessorInterface<\Throwable, array<string, mixed>>
  */

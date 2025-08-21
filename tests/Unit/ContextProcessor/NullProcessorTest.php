@@ -7,7 +7,7 @@ namespace RoadRunner\PsrLogger\Tests\Unit\ContextProcessor;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
-use RoadRunner\PsrLogger\ContextProcessor\NullProcessor;
+use RoadRunner\PsrLogger\Internal\ContextProcessor\NullProcessor;
 
 #[CoversClass(NullProcessor::class)]
 class NullProcessorTest extends TestCase

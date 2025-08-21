@@ -2,13 +2,15 @@
 
 declare(strict_types=1);
 
-namespace RoadRunner\PsrLogger\ContextProcessor;
+namespace RoadRunner\PsrLogger\Internal\ContextProcessor;
 
 /**
  * Manager for context data processors.
  *
  * Coordinates multiple processors to handle different data types for structured logging.
  * Processors are executed in registration order, with the first matching processor handling the value.
+ *
+ * @internal This class is internal to the PSR Logger implementation and should not be used directly.
  */
 class ContextProcessorManager
 {

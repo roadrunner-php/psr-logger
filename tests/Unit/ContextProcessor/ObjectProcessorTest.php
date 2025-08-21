@@ -7,7 +7,7 @@ namespace RoadRunner\PsrLogger\Tests\Unit\ContextProcessor;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
-use RoadRunner\PsrLogger\ContextProcessor\ObjectProcessor;
+use RoadRunner\PsrLogger\Internal\ContextProcessor\ObjectProcessor;
 
 #[CoversClass(ObjectProcessor::class)]
 class ObjectProcessorTest extends TestCase

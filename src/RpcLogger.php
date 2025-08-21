@@ -10,7 +10,7 @@ use Psr\Log\LogLevel as PsrLogLevel;
 use Psr\Log\InvalidArgumentException as PsrInvalidArgumentException;
 use RoadRunner\Logger\Logger as AppLogger;
 use RoadRunner\Logger\LogLevel;
-use RoadRunner\PsrLogger\ContextProcessor\ContextProcessorManager;
+use RoadRunner\PsrLogger\Internal\ContextProcessor\ContextProcessorManager;
 
 class RpcLogger implements LoggerInterface
 {

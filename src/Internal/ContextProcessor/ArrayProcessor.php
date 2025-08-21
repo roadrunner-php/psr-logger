@@ -2,12 +2,14 @@
 
 declare(strict_types=1);
 
-namespace RoadRunner\PsrLogger\ContextProcessor;
+namespace RoadRunner\PsrLogger\Internal\ContextProcessor;
 
 /**
  * Processor for arrays and nested arrays.
  *
  * Recursively processes array elements to handle complex nested structures.
+ *
+ * @internal This class is internal to the PSR Logger implementation and should not be used directly.
  *
  * @implements ContextProcessorInterface<array<array-key, mixed>, array<array-key, mixed>>
  */

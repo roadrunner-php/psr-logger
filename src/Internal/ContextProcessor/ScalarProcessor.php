@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace RoadRunner\PsrLogger\ContextProcessor;
+namespace RoadRunner\PsrLogger\Internal\ContextProcessor;
 
 /**
  * Processor for scalar values (string, int, float, bool).
@@ -10,6 +10,8 @@ namespace RoadRunner\PsrLogger\ContextProcessor;
  * These values are passed through as-is since they are already
  * suitable for structured logging. Note: null values are handled
  * by the dedicated NullProcessor.
+ *
+ * @internal This class is internal to the PSR Logger implementation and should not be used directly.
  *
  * @implements ContextProcessorInterface<scalar, scalar>
  */

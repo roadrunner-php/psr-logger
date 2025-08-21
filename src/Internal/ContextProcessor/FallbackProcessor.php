@@ -2,13 +2,15 @@
 
 declare(strict_types=1);
 
-namespace RoadRunner\PsrLogger\ContextProcessor;
+namespace RoadRunner\PsrLogger\Internal\ContextProcessor;
 
 /**
  * Fallback processor for unknown types.
  *
  * Returns the type name for any value that couldn't be processed
  * by more specific processors.
+ *
+ * @internal This class is internal to the PSR Logger implementation and should not be used directly.
  *
  * @implements ContextProcessorInterface<mixed, string>
  */

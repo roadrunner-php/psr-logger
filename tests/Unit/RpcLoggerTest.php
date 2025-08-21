@@ -11,8 +11,8 @@ use Psr\Log\InvalidArgumentException as PsrInvalidArgumentException;
 use Psr\Log\LogLevel as PsrLogLevel;
 use RoadRunner\Logger\Logger as AppLogger;
 use RoadRunner\Logger\LogLevel;
-use RoadRunner\PsrLogger\ContextProcessor\ContextProcessorInterface;
-use RoadRunner\PsrLogger\ContextProcessor\ContextProcessorManager;
+use RoadRunner\PsrLogger\Internal\ContextProcessor\ContextProcessorInterface;
+use RoadRunner\PsrLogger\Internal\ContextProcessor\ContextProcessorManager;
 use RoadRunner\PsrLogger\RpcLogger;
 
 #[CoversClass(RpcLogger::class)]

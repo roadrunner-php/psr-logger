@@ -6,7 +6,7 @@ namespace RoadRunner\PsrLogger\Tests\Unit\ContextProcessor;
 
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
-use RoadRunner\PsrLogger\ContextProcessor\DateTimeProcessor;
+use RoadRunner\PsrLogger\Internal\ContextProcessor\DateTimeProcessor;
 
 #[CoversClass(DateTimeProcessor::class)]
 class DateTimeProcessorTest extends TestCase

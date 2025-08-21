@@ -2,13 +2,15 @@
 
 declare(strict_types=1);
 
-namespace RoadRunner\PsrLogger\ContextProcessor;
+namespace RoadRunner\PsrLogger\Internal\ContextProcessor;
 
 /**
  * Processor for generic objects.
  *
  * Attempts to convert objects to array representation using public properties,
  * or falls back to class name if no public properties are available.
+ *
+ * @internal This class is internal to the PSR Logger implementation and should not be used directly.
  *
  * @implements ContextProcessorInterface<object, array<string, mixed>|string>
  */
