@@ -4,29 +4,26 @@ declare(strict_types=1);
 
 namespace RoadRunner\PsrLogger\Internal\ContextProcessor;
 
+use RoadRunner\PsrLogger\Internal\ObjectProcessor;
+
 /**
  * Processor for DateTime objects.
  *
  * Converts DateTime and DateTimeImmutable objects to ISO 8601 format
  * for consistent structured logging.
  *
- * @internal This class is internal to the PSR Logger implementation and should not be used directly.
+ * @implements ObjectProcessor<\DateTimeInterface>
  *
- * @implements ContextProcessorInterface<\DateTimeInterface, string>
+ * @internal
  */
-class DateTimeProcessor implements ContextProcessorInterface
+final class DateTimeProcessor implements ObjectProcessor
 {
-    public function canProcess(mixed $value): bool
+    public function canProcess(object $value): bool
     {
         return $value instanceof \DateTimeInterface;
     }
 
-    /**
-     * @param \DateTimeInterface $value
-     * @param callable(mixed): mixed $recursiveProcessor
-     * @return string
-     */
-    public function process(mixed $value, callable $recursiveProcessor): mixed
+    public function process(object $value, callable $processor): mixed
     {
         return $value->format(\DateTimeInterface::ATOM);
     }

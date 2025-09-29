@@ -4,30 +4,33 @@ declare(strict_types=1);
 
 namespace RoadRunner\PsrLogger\Internal\ContextProcessor;
 
+use RoadRunner\PsrLogger\Internal\ObjectProcessor;
+
 /**
- * Fallback processor for unknown types.
+ * Fallback processor for unknown objects.
  *
- * Returns the type name for any value that couldn't be processed
- * by more specific processors.
+ * @internal
  *
- * @internal This class is internal to the PSR Logger implementation and should not be used directly.
- *
- * @implements ContextProcessorInterface<mixed, string>
+ * @implements ObjectProcessor<object>
  */
-class FallbackProcessor implements ContextProcessorInterface
+final class FallbackProcessor implements ObjectProcessor
 {
-    public function canProcess(mixed $value): bool
+    public function canProcess(object $value): bool
     {
-        // This processor can handle anything as a last resort
         return true;
     }
 
-    /**
-     * @param callable(mixed): mixed $recursiveProcessor
-     * @return string
-     */
-    public function process(mixed $value, callable $recursiveProcessor): mixed
+    public function process(object $value, callable $processor): string
     {
-        return \gettype($value);
+        $result = ['@class' => $value::class] + \get_object_vars($value);
+        foreach ($result as $k => &$v) {
+            if ($v === $value) {
+                unset($result[$k]);
+            }
+
+            $v = $processor($v);
+        }
+
+        return $result;
     }
 }

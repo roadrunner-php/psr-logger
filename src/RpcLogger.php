@@ -10,19 +10,21 @@ use Psr\Log\LogLevel as PsrLogLevel;
 use Psr\Log\InvalidArgumentException as PsrInvalidArgumentException;
 use RoadRunner\Logger\Logger as AppLogger;
 use RoadRunner\Logger\LogLevel;
-use RoadRunner\PsrLogger\Internal\ContextProcessor\ContextProcessorManager;
+use RoadRunner\PsrLogger\Internal\DefaultProcessor;
+use RoadRunner\PsrLogger\Internal\ObjectProcessor;
+use RoadRunner\PsrLogger\Internal\ContextProcessor\ObjectProcessorManager;
 
 class RpcLogger implements LoggerInterface
 {
     use LoggerTrait;
 
     private readonly AppLogger $logger;
-    private readonly ContextProcessorManager $contextProcessor;
+    private readonly ObjectProcessor $contextProcessor;
 
-    public function __construct(AppLogger $logger, ?ContextProcessorManager $contextProcessor = null)
+    public function __construct(AppLogger $logger, ?callable $processor = null)
     {
         $this->logger = $logger;
-        $this->contextProcessor = $contextProcessor ?? new ContextProcessorManager();
+        $this->contextProcessor = $processor ?? DefaultProcessor::createDefault();
     }
 
     /**

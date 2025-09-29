@@ -4,29 +4,24 @@ declare(strict_types=1);
 
 namespace RoadRunner\PsrLogger\Internal\ContextProcessor;
 
+use RoadRunner\PsrLogger\Internal\ObjectProcessor;
+
 /**
- * Processor for Exception and Throwable objects.
- *
  * Converts exceptions to structured data containing class, message,
  * code, file, line, and stack trace information.
  *
- * @internal This class is internal to the PSR Logger implementation and should not be used directly.
+ * @internal
  *
- * @implements ContextProcessorInterface<\Throwable, array<string, mixed>>
+ * @implements ObjectProcessor<\Throwable>
  */
-class ThrowableProcessor implements ContextProcessorInterface
+final class ThrowableProcessor implements ObjectProcessor
 {
-    public function canProcess(mixed $value): bool
+    public function canProcess(object $value): bool
     {
         return $value instanceof \Throwable;
     }
 
-    /**
-     * @param \Throwable $value
-     * @param callable(mixed): mixed $recursiveProcessor
-     * @return array<string, mixed>
-     */
-    public function process(mixed $value, callable $recursiveProcessor): mixed
+    public function process(object $value, callable $processor): array
     {
         return [
             'class' => \get_class($value),

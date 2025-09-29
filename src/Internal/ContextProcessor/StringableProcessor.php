@@ -4,28 +4,23 @@ declare(strict_types=1);
 
 namespace RoadRunner\PsrLogger\Internal\ContextProcessor;
 
+use RoadRunner\PsrLogger\Internal\ObjectProcessor;
+
 /**
- * Processor for objects implementing the Stringable interface.
- *
  * Converts Stringable objects to their string representation.
  *
- * @internal This class is internal to the PSR Logger implementation and should not be used directly.
+ * @internal
  *
- * @implements ContextProcessorInterface<\Stringable, string>
+ * @implements ObjectProcessor<\Stringable>
  */
-class StringableProcessor implements ContextProcessorInterface
+final class StringableProcessor implements ObjectProcessor
 {
-    public function canProcess(mixed $value): bool
+    public function canProcess(object $value): bool
     {
         return $value instanceof \Stringable;
     }
 
-    /**
-     * @param \Stringable $value
-     * @param callable(mixed): mixed $recursiveProcessor
-     * @return string
-     */
-    public function process(mixed $value, callable $recursiveProcessor): mixed
+    public function process(object $value, callable $processor): mixed
     {
         return (string) $value;
     }
