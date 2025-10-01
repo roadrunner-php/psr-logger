@@ -21,11 +21,17 @@ final class DefaultProcessor
 
     private function __construct() {}
 
+    /**
+     * Create empty instance.
+     */
     public static function create(): self
     {
         return new self();
     }
 
+    /**
+     * Create with default set of {@see ObjectProcessor}.
+     */
     public static function createDefault(): self
     {
         $self = new self();
