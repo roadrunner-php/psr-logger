@@ -8,7 +8,6 @@ use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use RoadRunner\PsrLogger\Context\DefaultProcessor;
-use RoadRunner\PsrLogger\Context\ObjectProcessor\BuiltInTypeProcessor;
 
 #[CoversClass(DefaultProcessor::class)]
 class DefaultProcessorTest extends TestCase
