@@ -37,13 +37,17 @@
         "buggregator/trap": "^1.13",
         "phpunit/phpunit": "^10.5.45",
         "spiral/code-style": "^2.2",
+        "symfony/polyfill-php83": "*",
         "ta-tikoma/phpunit-architecture-test": "^0.8.5",
         "vimeo/psalm": "^6.10"
     },
     "scripts": {
         "cs:diff": "php-cs-fixer fix --dry-run -v --diff --show-progress dots",
         "cs:fix": "php-cs-fixer fix -v",
-        "test": "phpunit",
+        "test": [
+            "@putenv XDEBUG_MODE=coverage",
+            "phpunit"
+        ],
         "psalm": "psalm"
     },
     "autoload": {
