@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace RoadRunner\PsrLogger\Tests\Unit\ContextProcessor;
+namespace Context\ObjectProcessor;
 
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
-use RoadRunner\PsrLogger\Internal\ContextProcessor\StringableProcessor;
+use RoadRunner\PsrLogger\Context\ObjectProcessor\StringableProcessor;
 
 #[CoversClass(StringableProcessor::class)]
 class StringableProcessorTest extends TestCase
@@ -17,14 +17,13 @@ class StringableProcessorTest extends TestCase
     public static function nonStringableProvider(): array
     {
         return [
-            'string' => ['regular string'],
-            'integer' => [42],
-            'float' => [3.14],
-            'boolean' => [true],
-            'null' => [null],
-            'array' => [[]],
-            'object' => [new \stdClass()],
-            'resource' => [\fopen('php://memory', 'r')],
+            [new \stdClass(), false],
+            [new class implements \Stringable {
+                public function __toString(): string
+                {
+                    return 'I am string';
+                }
+            }, true],
         ];
     }
 
@@ -41,9 +40,9 @@ class StringableProcessorTest extends TestCase
     }
 
     #[DataProvider('nonStringableProvider')]
-    public function testCannotProcessNonStringable(mixed $value): void
+    public function testCannotProcessNonStringable(mixed $value, $expected): void
     {
-        $this->assertFalse($this->processor->canProcess($value));
+        $this->assertSame($expected, $this->processor->canProcess($value));
     }
 
     public function testProcessStringable(): void

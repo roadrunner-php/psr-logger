@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace RoadRunner\PsrLogger\Internal;
+namespace RoadRunner\PsrLogger\Context;
 
 /**
  * Converts an object into a scalar or an arra for serializable logger context.

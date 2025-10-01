@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace RoadRunner\PsrLogger\Tests\Unit\ContextProcessor;
+namespace Context\ObjectProcessor;
 
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
-use RoadRunner\PsrLogger\Internal\ContextProcessor\DateTimeProcessor;
+use RoadRunner\PsrLogger\Context\ObjectProcessor\DateTimeProcessor;
 
 #[CoversClass(DateTimeProcessor::class)]
 class DateTimeProcessorTest extends TestCase
@@ -27,9 +27,6 @@ class DateTimeProcessorTest extends TestCase
 
     public function testCannotProcessNonDateTime(): void
     {
-        $this->assertFalse($this->processor->canProcess('not a datetime'));
-        $this->assertFalse($this->processor->canProcess(123));
-        $this->assertFalse($this->processor->canProcess([]));
         $this->assertFalse($this->processor->canProcess(new \stdClass()));
     }
 

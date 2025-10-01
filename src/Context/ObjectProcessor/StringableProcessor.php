@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace RoadRunner\PsrLogger\Internal\ContextProcessor;
+namespace RoadRunner\PsrLogger\Context\ObjectProcessor;
 
-use RoadRunner\PsrLogger\Internal\ObjectProcessor;
+use RoadRunner\PsrLogger\Context\ObjectProcessor;
 
 /**
  * Converts Stringable objects to their string representation.

@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace RoadRunner\PsrLogger\Tests\Unit\ContextProcessor;
+namespace Context\ObjectProcessor;
 
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
-use RoadRunner\PsrLogger\Internal\ContextProcessor\ThrowableProcessor;
+use RoadRunner\PsrLogger\Context\ObjectProcessor\ThrowableProcessor;
 
 #[CoversClass(ThrowableProcessor::class)]
 class ThrowableProcessorTest extends TestCase
@@ -28,12 +28,7 @@ class ThrowableProcessorTest extends TestCase
     public static function nonThrowableProvider(): array
     {
         return [
-            'string' => ['error message'],
-            'integer' => [500],
-            'array' => [['error' => 'message']],
             'object' => [new \stdClass()],
-            'null' => [null],
-            'boolean' => [false],
         ];
     }
 

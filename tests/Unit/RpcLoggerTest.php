@@ -9,10 +9,11 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\InvalidArgumentException as PsrInvalidArgumentException;
 use Psr\Log\LogLevel as PsrLogLevel;
+use RoadRunner\AppLogger\DTO\V1\LogEntry;
 use RoadRunner\Logger\Logger as AppLogger;
 use RoadRunner\Logger\LogLevel;
-use RoadRunner\PsrLogger\Internal\ContextProcessor\ContextProcessorInterface;
-use RoadRunner\PsrLogger\Internal\ContextProcessor\ContextProcessorManager;
+use RoadRunner\PsrLogger\Context\DefaultProcessor;
+use RoadRunner\PsrLogger\Context\ObjectProcessor;
 use RoadRunner\PsrLogger\RpcLogger;
 
 #[CoversClass(RpcLogger::class)]
@@ -58,7 +59,7 @@ class RpcLoggerTest extends TestCase
         $this->assertSame(1, $this->rpc->getCallCount());
         $lastCall = $this->rpc->getLastCall();
         $this->assertSame('ErrorWithContext', $lastCall['method']);
-        $this->assertInstanceOf(\RoadRunner\AppLogger\DTO\V1\LogEntry::class, $lastCall['payload']);
+        $this->assertInstanceOf(LogEntry::class, $lastCall['payload']);
     }
 
     public function testLogWithWarningLevel(): void
@@ -71,7 +72,7 @@ class RpcLoggerTest extends TestCase
         $this->assertSame(1, $this->rpc->getCallCount());
         $lastCall = $this->rpc->getLastCall();
         $this->assertSame('WarningWithContext', $lastCall['method']);
-        $this->assertInstanceOf(\RoadRunner\AppLogger\DTO\V1\LogEntry::class, $lastCall['payload']);
+        $this->assertInstanceOf(LogEntry::class, $lastCall['payload']);
     }
 
     #[DataProvider('infoLevelsProvider')]
@@ -85,7 +86,7 @@ class RpcLoggerTest extends TestCase
         $this->assertSame(1, $this->rpc->getCallCount());
         $lastCall = $this->rpc->getLastCall();
         $this->assertSame('InfoWithContext', $lastCall['method']);
-        $this->assertInstanceOf(\RoadRunner\AppLogger\DTO\V1\LogEntry::class, $lastCall['payload']);
+        $this->assertInstanceOf(LogEntry::class, $lastCall['payload']);
     }
 
     public function testLogWithDebugLevel(): void
@@ -98,7 +99,7 @@ class RpcLoggerTest extends TestCase
         $this->assertSame(1, $this->rpc->getCallCount());
         $lastCall = $this->rpc->getLastCall();
         $this->assertSame('DebugWithContext', $lastCall['method']);
-        $this->assertInstanceOf(\RoadRunner\AppLogger\DTO\V1\LogEntry::class, $lastCall['payload']);
+        $this->assertInstanceOf(LogEntry::class, $lastCall['payload']);
     }
 
     public function testLogWithStringableMessage(): void
@@ -140,7 +141,7 @@ class RpcLoggerTest extends TestCase
         $this->assertSame(1, $this->rpc->getCallCount());
         $lastCall = $this->rpc->getLastCall();
         $this->assertSame('ErrorWithContext', $lastCall['method']);
-        $this->assertInstanceOf(\RoadRunner\AppLogger\DTO\V1\LogEntry::class, $lastCall['payload']);
+        $this->assertInstanceOf(LogEntry::class, $lastCall['payload']);
     }
 
     public function testLogWithMixedCaseLevel(): void
@@ -153,7 +154,7 @@ class RpcLoggerTest extends TestCase
         $this->assertSame(1, $this->rpc->getCallCount());
         $lastCall = $this->rpc->getLastCall();
         $this->assertSame('WarningWithContext', $lastCall['method']);
-        $this->assertInstanceOf(\RoadRunner\AppLogger\DTO\V1\LogEntry::class, $lastCall['payload']);
+        $this->assertInstanceOf(LogEntry::class, $lastCall['payload']);
     }
 
     public function testLogWithEnumLevel(): void
@@ -372,7 +373,7 @@ class RpcLoggerTest extends TestCase
         $this->assertSame(1, $this->rpc->getCallCount());
         $lastCall = $this->rpc->getLastCall();
         $this->assertSame('InfoWithContext', $lastCall['method']);
-        $this->assertInstanceOf(\RoadRunner\AppLogger\DTO\V1\LogEntry::class, $lastCall['payload']);
+        $this->assertInstanceOf(LogEntry::class, $lastCall['payload']);
     }
 
     public function testLogWithDateTimeContext(): void
@@ -391,7 +392,7 @@ class RpcLoggerTest extends TestCase
         $this->assertSame(1, $this->rpc->getCallCount());
         $lastCall = $this->rpc->getLastCall();
         $this->assertSame('InfoWithContext', $lastCall['method']);
-        $this->assertInstanceOf(\RoadRunner\AppLogger\DTO\V1\LogEntry::class, $lastCall['payload']);
+        $this->assertInstanceOf(LogEntry::class, $lastCall['payload']);
     }
 
     public function testLogWithExceptionContext(): void
@@ -409,7 +410,7 @@ class RpcLoggerTest extends TestCase
         $this->assertSame(1, $this->rpc->getCallCount());
         $lastCall = $this->rpc->getLastCall();
         $this->assertSame('ErrorWithContext', $lastCall['method']);
-        $this->assertInstanceOf(\RoadRunner\AppLogger\DTO\V1\LogEntry::class, $lastCall['payload']);
+        $this->assertInstanceOf(LogEntry::class, $lastCall['payload']);
     }
 
     public function testLogWithStringableContext(): void
@@ -432,7 +433,7 @@ class RpcLoggerTest extends TestCase
         $this->assertSame(1, $this->rpc->getCallCount());
         $lastCall = $this->rpc->getLastCall();
         $this->assertSame('InfoWithContext', $lastCall['method']);
-        $this->assertInstanceOf(\RoadRunner\AppLogger\DTO\V1\LogEntry::class, $lastCall['payload']);
+        $this->assertInstanceOf(LogEntry::class, $lastCall['payload']);
     }
 
     public function testLogWithNestedArrayContext(): void
@@ -457,7 +458,7 @@ class RpcLoggerTest extends TestCase
         $this->assertSame(1, $this->rpc->getCallCount());
         $lastCall = $this->rpc->getLastCall();
         $this->assertSame('DebugWithContext', $lastCall['method']);
-        $this->assertInstanceOf(\RoadRunner\AppLogger\DTO\V1\LogEntry::class, $lastCall['payload']);
+        $this->assertInstanceOf(LogEntry::class, $lastCall['payload']);
     }
 
     public function testLogWithObjectContext(): void
@@ -479,7 +480,7 @@ class RpcLoggerTest extends TestCase
         $this->assertSame(1, $this->rpc->getCallCount());
         $lastCall = $this->rpc->getLastCall();
         $this->assertSame('InfoWithContext', $lastCall['method']);
-        $this->assertInstanceOf(\RoadRunner\AppLogger\DTO\V1\LogEntry::class, $lastCall['payload']);
+        $this->assertInstanceOf(LogEntry::class, $lastCall['payload']);
     }
 
     public function testLogWithResourceContext(): void
@@ -499,7 +500,7 @@ class RpcLoggerTest extends TestCase
         $this->assertSame(1, $this->rpc->getCallCount());
         $lastCall = $this->rpc->getLastCall();
         $this->assertSame('InfoWithContext', $lastCall['method']);
-        $this->assertInstanceOf(\RoadRunner\AppLogger\DTO\V1\LogEntry::class, $lastCall['payload']);
+        $this->assertInstanceOf(LogEntry::class, $lastCall['payload']);
     }
 
     public function testLogWithMixedComplexContext(): void
@@ -538,19 +539,19 @@ class RpcLoggerTest extends TestCase
         $this->assertSame(1, $this->rpc->getCallCount());
         $lastCall = $this->rpc->getLastCall();
         $this->assertSame('WarningWithContext', $lastCall['method']);
-        $this->assertInstanceOf(\RoadRunner\AppLogger\DTO\V1\LogEntry::class, $lastCall['payload']);
+        $this->assertInstanceOf(LogEntry::class, $lastCall['payload']);
     }
 
     public function testCustomProcessorIntegration(): void
     {
         // Create a custom processor for email addresses
-        $emailProcessor = new class implements ContextProcessorInterface {
+        $emailProcessor = new class implements ObjectProcessor {
             public function canProcess(mixed $value): bool
             {
                 return \is_string($value) && \filter_var($value, FILTER_VALIDATE_EMAIL) !== false;
             }
 
-            public function process(mixed $value, callable $recursiveProcessor): mixed
+            public function process(mixed $value, callable $processor): mixed
             {
                 // Mask email for privacy
                 $parts = \explode('@', $value);
@@ -559,8 +560,7 @@ class RpcLoggerTest extends TestCase
         };
 
         // Create processor manager with custom processor added first
-        $processorManager = new ContextProcessorManager();
-        $processorManager->addProcessor($emailProcessor);
+        $processorManager = DefaultProcessor::createDefault()->withObjectProcessors($emailProcessor);
 
         // Create logger with custom processor manager
         $logger = new RpcLogger($this->appLogger, $processorManager);
@@ -577,19 +577,19 @@ class RpcLoggerTest extends TestCase
         $this->assertSame(1, $this->rpc->getCallCount());
         $lastCall = $this->rpc->getLastCall();
         $this->assertSame('InfoWithContext', $lastCall['method']);
-        $this->assertInstanceOf(\RoadRunner\AppLogger\DTO\V1\LogEntry::class, $lastCall['payload']);
+        $this->assertInstanceOf(LogEntry::class, $lastCall['payload']);
     }
 
     public function testMultipleCustomProcessors(): void
     {
         // Custom processor for URLs
-        $urlProcessor = new class implements ContextProcessorInterface {
+        $urlProcessor = new class implements ObjectProcessor {
             public function canProcess(mixed $value): bool
             {
                 return \is_string($value) && \filter_var($value, FILTER_VALIDATE_URL) !== false;
             }
 
-            public function process(mixed $value, callable $recursiveProcessor): mixed
+            public function process(mixed $value, callable $processor): mixed
             {
                 $parsed = \parse_url($value);
                 return [
@@ -601,21 +601,21 @@ class RpcLoggerTest extends TestCase
         };
 
         // Custom processor for credit card numbers (mock)
-        $ccProcessor = new class implements ContextProcessorInterface {
+        $ccProcessor = new class implements ObjectProcessor {
             public function canProcess(mixed $value): bool
             {
                 return \is_string($value) && \preg_match('/^\d{4}-?\d{4}-?\d{4}-?\d{4}$/', $value);
             }
 
-            public function process(mixed $value, callable $recursiveProcessor): mixed
+            public function process(mixed $value, callable $processor): mixed
             {
                 return '****-****-****-' . \substr($value, -4);
             }
         };
 
-        $processorManager = new ContextProcessorManager();
-        $processorManager->addProcessor($urlProcessor);
-        $processorManager->addProcessor($ccProcessor);
+        $processorManager = \RoadRunner\PsrLogger\Context\DefaultProcessor::createDefault()
+            ->withObjectProcessors($urlProcessor)
+            ->withObjectProcessors($ccProcessor);
 
         $logger = new RpcLogger($this->appLogger, $processorManager);
 
@@ -631,7 +631,7 @@ class RpcLoggerTest extends TestCase
         $this->assertSame(1, $this->rpc->getCallCount());
         $lastCall = $this->rpc->getLastCall();
         $this->assertSame('WarningWithContext', $lastCall['method']);
-        $this->assertInstanceOf(\RoadRunner\AppLogger\DTO\V1\LogEntry::class, $lastCall['payload']);
+        $this->assertInstanceOf(LogEntry::class, $lastCall['payload']);
     }
 
     public function testDefaultProcessorManagerWhenNoneProvided(): void
@@ -650,39 +650,39 @@ class RpcLoggerTest extends TestCase
         $this->assertSame(1, $this->rpc->getCallCount());
         $lastCall = $this->rpc->getLastCall();
         $this->assertSame('ErrorWithContext', $lastCall['method']);
-        $this->assertInstanceOf(\RoadRunner\AppLogger\DTO\V1\LogEntry::class, $lastCall['payload']);
+        $this->assertInstanceOf(LogEntry::class, $lastCall['payload']);
     }
 
     public function testProcessorOrdering(): void
     {
         // Create processors for the same type to test ordering
-        $firstProcessor = new class implements ContextProcessorInterface {
+        $firstProcessor = new class implements ObjectProcessor {
             public function canProcess(mixed $value): bool
             {
                 return \is_int($value);
             }
 
-            public function process(mixed $value, callable $recursiveProcessor): mixed
+            public function process(mixed $value, callable $processor): mixed
             {
                 return 'first:' . $value;
             }
         };
 
-        $secondProcessor = new class implements ContextProcessorInterface {
+        $secondProcessor = new class implements ObjectProcessor {
             public function canProcess(mixed $value): bool
             {
                 return \is_int($value);
             }
 
-            public function process(mixed $value, callable $recursiveProcessor): mixed
+            public function process(mixed $value, callable $processor): mixed
             {
                 return 'second:' . $value;
             }
         };
 
-        $processorManager = new ContextProcessorManager();
-        $processorManager->addProcessor($firstProcessor);  // Added first, should be used
-        $processorManager->addProcessor($secondProcessor); // Added second, should be skipped
+        $processorManager = \RoadRunner\PsrLogger\Context\DefaultProcessor::createDefault()
+            ->withObjectProcessors($firstProcessor)  // Added first, should be used
+            ->withObjectProcessors($secondProcessor); // Added second, should be skipped
 
         $logger = new RpcLogger($this->appLogger, $processorManager);
 
@@ -695,7 +695,7 @@ class RpcLoggerTest extends TestCase
 
         // The first processor should have been used
         // We can't directly inspect the processed context, but we know it was processed
-        $this->assertInstanceOf(\RoadRunner\AppLogger\DTO\V1\LogEntry::class, $lastCall['payload']);
+        $this->assertInstanceOf(LogEntry::class, $lastCall['payload']);
     }
 
     protected function setUp(): void

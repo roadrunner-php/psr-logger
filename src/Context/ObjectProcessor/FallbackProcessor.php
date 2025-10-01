@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace RoadRunner\PsrLogger\Internal\ContextProcessor;
+namespace RoadRunner\PsrLogger\Context\ObjectProcessor;
 
-use RoadRunner\PsrLogger\Internal\ObjectProcessor;
+use RoadRunner\PsrLogger\Context\ObjectProcessor;
 
 /**
  * Fallback processor for unknown objects.
@@ -20,7 +20,7 @@ final class FallbackProcessor implements ObjectProcessor
         return true;
     }
 
-    public function process(object $value, callable $processor): string
+    public function process(object $value, callable $processor): array
     {
         $result = ['@class' => $value::class] + \get_object_vars($value);
         foreach ($result as $k => &$v) {

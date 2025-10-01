@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace RoadRunner\PsrLogger\Internal;
+namespace RoadRunner\PsrLogger\Context;
 
-use RoadRunner\PsrLogger\Internal\ContextProcessor\DateTimeProcessor;
-use RoadRunner\PsrLogger\Internal\ContextProcessor\FallbackProcessor;
-use RoadRunner\PsrLogger\Internal\ContextProcessor\StringableProcessor;
-use RoadRunner\PsrLogger\Internal\ContextProcessor\ThrowableProcessor;
+use RoadRunner\PsrLogger\Context\ObjectProcessor\DateTimeProcessor;
+use RoadRunner\PsrLogger\Context\ObjectProcessor\FallbackProcessor;
+use RoadRunner\PsrLogger\Context\ObjectProcessor\StringableProcessor;
+use RoadRunner\PsrLogger\Context\ObjectProcessor\ThrowableProcessor;
 
 final class DefaultProcessor
 {
@@ -23,6 +23,7 @@ final class DefaultProcessor
             new ThrowableProcessor(),
             new FallbackProcessor(),
         ];
+        return $self;
     }
 
     /**
