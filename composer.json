@@ -37,6 +37,7 @@
         "buggregator/trap": "^1.13",
         "phpunit/phpunit": "^10.5.45",
         "spiral/code-style": "^2.2",
+        "symfony/polyfill-php83": "*",
         "ta-tikoma/phpunit-architecture-test": "^0.8.5",
         "vimeo/psalm": "^6.10"
     },
