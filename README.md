@@ -109,12 +109,20 @@ The logger maps PSR-3 log levels to RoadRunner logging methods as follows:
 
 ## Context Handling
 
-The logger supports structured logging with context arrays. When context data is provided, it's passed through to the underlying RoadRunner logger, which can handle complex data structures including:
+The logger supports structured logging with context arrays. Context data is processed by a context processor before being passed to the underlying RoadRunner logger.
+
+### Default Context Processor
+
+By default, `RpcLogger` uses `DefaultProcessor` which can handle:
 
 - Scalar values (string, int, float, bool)
 - Arrays and nested arrays
-- Objects that implement `\Stringable`
-- DateTime objects and exceptions (TODO)
+- Resources (converted to resource type description)
+- Objects via built-in object processors:
+  - **DateTimeProcessor**: Converts `\DateTimeInterface` objects to ISO 8601 format (ATOM)
+  - **StringableProcessor**: Converts `\Stringable` objects to their string representation
+  - **ThrowableProcessor**: Converts exceptions/errors to structured arrays with class, message, code, file, line, and trace
+  - **FallbackProcessor**: Converts any other objects to arrays with class name and public properties
 
 ```php
 $logger->info('Order processed', [
@@ -130,4 +138,85 @@ $logger->info('Order processed', [
         'campaign' => 'summer_sale'
     ]
 ]);
+```
+
+### Extending DefaultProcessor
+
+The recommended approach is to extend `DefaultProcessor` with custom object processors using the `withObjectProcessors()` method. This allows you to add your own object handling while keeping all the built-in processors.
+
+```php
+/**
+ * @implements ObjectProcessor<ActiveRecord>
+ */
+class EntityProcessor implements ObjectProcessor
+{
+    public function canProcess(object $value): bool
+    {
+        return $value instanceof ActiveRecord;
+    }
+
+    public function process(object $value, callable $processor): mixed
+    {
+        return $processor($value->toArray());
+    }
+}
+
+// Extend default processor with your custom processor
+$processor = DefaultProcessor::createDefault()
+    ->withObjectProcessors(new EntityProcessor());
+
+$logger = new RpcLogger($appLogger, $processor);
+
+// Now entity objects will be automatically converted to arrays with essential data
+$logger->info('Order created', [
+    'user' => $user,     // User entity instance
+    'order' => $order,   // Order entity instance
+]);
+```
+
+> [!NOTE]
+> Custom processors added via `withObjectProcessors()` are placed **before** the built-in processors.
+> This means your custom processors take precedence and can override the default behavior for specific object types.
+
+```php
+// Add multiple custom processors at once
+$processor = DefaultProcessor::createDefault()
+    ->withObjectProcessors(
+        new EntityProcessor(),
+        new MoneyProcessor(),
+        new CustomValueObjectProcessor(),
+    );
+
+$logger = new RpcLogger($appLogger, $processor);
+```
+
+You can also start with an empty processor and add only the processors you need:
+
+```php
+use RoadRunner\PsrLogger\Context\ObjectProcessor\DateTimeProcessor;
+
+// Create empty processor and add only specific processors
+$processor = DefaultProcessor::create()
+    ->withObjectProcessors(
+        new DateTimeProcessor(),
+        new EntityProcessor()
+    );
+
+$logger = new RpcLogger($appLogger, $processor);
+```
+
+### Custom Context Processor
+
+For advanced use cases, you can provide a completely custom context processor to the `RpcLogger` constructor:
+
+```php
+use RoadRunner\Logger\Logger as AppLogger;
+use RoadRunner\PsrLogger\RpcLogger;
+
+// Using a completely custom processor
+$customProcessor = function (mixed $context): mixed {
+    // Your custom processing logic
+    return $context;
+};
+$logger = new RpcLogger($appLogger, $customProcessor);
 ```

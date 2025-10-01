@@ -20,12 +20,12 @@ class RpcLogger implements LoggerInterface
     use LoggerTrait;
 
     private readonly AppLogger $logger;
-    private readonly \Closure $objectProcessor;
+    private readonly \Closure $processor;
 
     public function __construct(AppLogger $logger, ?callable $processor = null)
     {
         $this->logger = $logger;
-        $this->objectProcessor = ($processor ?? DefaultProcessor::createDefault())(...);
+        $this->processor = ($processor ?? DefaultProcessor::createDefault())(...);
     }
 
     /**
@@ -47,7 +47,7 @@ class RpcLogger implements LoggerInterface
         });
 
         // Process context data for structured logging using the processor manager
-        $processedContext = ($this->objectProcessor)($context);
+        $processedContext = ($this->processor)($context);
 
         match ($normalizedLevel) {
             PsrLogLevel::EMERGENCY,
