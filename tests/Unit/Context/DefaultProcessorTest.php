@@ -86,6 +86,6 @@ class DefaultProcessorTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->processor = new DefaultProcessor();
+        $this->processor = DefaultProcessor::create();
     }
 }

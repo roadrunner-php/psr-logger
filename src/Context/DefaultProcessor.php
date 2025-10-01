@@ -9,10 +9,22 @@ use RoadRunner\PsrLogger\Context\ObjectProcessor\FallbackProcessor;
 use RoadRunner\PsrLogger\Context\ObjectProcessor\StringableProcessor;
 use RoadRunner\PsrLogger\Context\ObjectProcessor\ThrowableProcessor;
 
+/**
+ * Default context processor.
+ *
+ * @api
+ */
 final class DefaultProcessor
 {
     /** @var list<ObjectProcessor> */
     private array $processors = [];
+
+    private function __construct() {}
+
+    public static function create(): self
+    {
+        return new self();
+    }
 
     public static function createDefault(): self
     {

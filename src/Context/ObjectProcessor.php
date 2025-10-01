@@ -5,11 +5,10 @@ declare(strict_types=1);
 namespace RoadRunner\PsrLogger\Context;
 
 /**
- * Converts an object into a scalar or an arra for serializable logger context.
+ * Converts an object into a scalar or an array for serializable logger context.
  *
  * @template T
- *
- * @internal
+ * @api
  */
 interface ObjectProcessor
 {

@@ -9,17 +9,18 @@ use RoadRunner\PsrLogger\Context\ObjectProcessor;
 /**
  * Fallback processor for unknown objects.
  *
- * @internal
- *
  * @implements ObjectProcessor<object>
+ * @api
  */
 final class FallbackProcessor implements ObjectProcessor
 {
+    #[\Override]
     public function canProcess(object $value): bool
     {
         return true;
     }
 
+    #[\Override]
     public function process(object $value, callable $processor): array
     {
         $result = ['@class' => $value::class] + \get_object_vars($value);

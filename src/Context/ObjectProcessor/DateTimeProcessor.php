@@ -13,16 +13,17 @@ use RoadRunner\PsrLogger\Context\ObjectProcessor;
  * for consistent structured logging.
  *
  * @implements ObjectProcessor<\DateTimeInterface>
- *
- * @internal
+ * @api
  */
 final class DateTimeProcessor implements ObjectProcessor
 {
+    #[\Override]
     public function canProcess(object $value): bool
     {
         return $value instanceof \DateTimeInterface;
     }
 
+    #[\Override]
     public function process(object $value, callable $processor): mixed
     {
         return $value->format(\DateTimeInterface::ATOM);

@@ -12,6 +12,9 @@ use RoadRunner\Logger\Logger as AppLogger;
 use RoadRunner\Logger\LogLevel;
 use RoadRunner\PsrLogger\Context\DefaultProcessor;
 
+/**
+ * @api
+ */
 class RpcLogger implements LoggerInterface
 {
     use LoggerTrait;
@@ -32,6 +35,7 @@ class RpcLogger implements LoggerInterface
      *
      * @link https://www.php-fig.org/psr/psr-3/#5-psrlogloglevel
      */
+    #[\Override]
     public function log($level, \Stringable|string $message, array $context = []): void
     {
         $normalizedLevel = \strtolower(match (true) {
