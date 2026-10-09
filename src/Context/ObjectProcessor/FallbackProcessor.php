@@ -24,11 +24,13 @@ final class FallbackProcessor implements ObjectProcessor
     public function process(object $value, callable $processor): array
     {
         $result = ['@class' => $value::class] + \get_object_vars($value);
+        /** @var mixed $v */
         foreach ($result as $k => &$v) {
             if ($v === $value) {
                 unset($result[$k]);
             }
 
+            /** @var mixed $v */
             $v = $processor($v);
         }
 

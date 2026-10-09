@@ -61,9 +61,7 @@ final class DefaultProcessor
         }
 
         if (\is_array($value)) {
-            foreach ($value as &$v) {
-                $v = $this($v);
-            }
+            $value = \array_map($this, $value);
         }
 
         if (\is_object($value)) {

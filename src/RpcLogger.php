@@ -47,6 +47,7 @@ class RpcLogger implements LoggerInterface
         });
 
         // Process context data for structured logging using the processor manager
+        /** @var array<string, mixed> $processedContext A processor maps the context array to an array. */
         $processedContext = ($this->processor)($context);
 
         match ($normalizedLevel) {
