@@ -715,6 +715,17 @@ final class RpcLoggerTest
         ]);
     }
 
+    public function testLogSendsExceptionAsStructuredAttribute(): void
+    {
+        $this->rpcLogger->error('Failed', ['exception' => new \RuntimeException('boom', 7)]);
+
+        $value = \json_decode(self::attributes($this->rpc->getLastCall()['payload'])['exception'], true);
+        Assert::array($value)->hasKeys('file', 'line', 'trace');
+        Assert::same($value['class'], \RuntimeException::class);
+        Assert::same($value['message'], 'boom');
+        Assert::same($value['code'], 7);
+    }
+
     public function testLogUsesCustomCallableProcessor(): void
     {
         $logger = new RpcLogger($this->appLogger, static fn(array $context): array => ['keys' => \array_keys($context)]);
