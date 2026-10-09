@@ -9,7 +9,6 @@ use Testo\Codecov\Covers;
 use Testo\Test;
 use Testo\Assert;
 use Testo\Lifecycle\BeforeTest;
-use Testo\Skip;
 use RoadRunner\PsrLogger\Context\DefaultProcessor;
 use RoadRunner\PsrLogger\Context\ObjectProcessor;
 
@@ -117,15 +116,39 @@ final class DefaultProcessorTest
         Assert::same($result['object'], ['@class' => 'stdClass', 'id' => 1]);
     }
 
-    #[Skip('Throwable extends Stringable, so StringableProcessor, registered before ThrowableProcessor, turns exceptions into strings')]
     public function defaultProcessorConvertsThrowableToStructuredArray(): void
     {
         $result = DefaultProcessor::createDefault()(new \RuntimeException('boom', 7));
 
-        Assert::array($result);
+        Assert::array($result)->hasKeys('file', 'line', 'trace');
         Assert::same($result['class'], \RuntimeException::class);
         Assert::same($result['message'], 'boom');
         Assert::same($result['code'], 7);
+    }
+
+    public function defaultProcessorConvertsErrorToStructuredArray(): void
+    {
+        $result = DefaultProcessor::createDefault()(new \TypeError('wrong type'));
+
+        Assert::array($result);
+        Assert::same($result['class'], \TypeError::class);
+        Assert::same($result['message'], 'wrong type');
+    }
+
+    public function defaultProcessorPrefersStructuredArrayOverCustomToString(): void
+    {
+        $exception = new class('boom') extends \Exception {
+            public function __toString(): string
+            {
+                return 'custom string';
+            }
+        };
+
+        $result = DefaultProcessor::createDefault()(['error' => $exception]);
+
+        Assert::array($result['error']);
+        Assert::same($result['error']['class'], $exception::class);
+        Assert::same($result['error']['message'], 'boom');
     }
 
     public function defaultProcessorConvertsObjectsInNestedArrays(): void
