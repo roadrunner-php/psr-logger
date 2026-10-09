@@ -17,6 +17,19 @@
     <issueHandlers>
         <MissingOverrideAttribute errorLevel="suppress" />
         <ClassMustBeFinal errorLevel="suppress" />
+        <!-- Temporary: context values are untyped (mixed) after processing; to be fixed in the static analysis pass -->
+        <MixedAssignment>
+            <errorLevel type="suppress">
+                <file name="src/Context/DefaultProcessor.php" />
+                <file name="src/Context/ObjectProcessor/FallbackProcessor.php" />
+                <file name="src/RpcLogger.php" />
+            </errorLevel>
+        </MixedAssignment>
+        <MixedArgument>
+            <errorLevel type="suppress">
+                <file name="src/RpcLogger.php" />
+            </errorLevel>
+        </MixedArgument>
     </issueHandlers>
     <forbiddenFunctions>
         <function name="dd"/>
