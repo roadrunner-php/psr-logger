@@ -699,6 +699,54 @@ final class RpcLoggerTest
         Assert::instanceOf($lastCall['payload'], LogEntry::class);
     }
 
+    public function testLogSendsProcessedContextAttributes(): void
+    {
+        $this->rpcLogger->info('Order created', [
+            'created_at' => new \DateTimeImmutable('2024-02-03T04:05:06+00:00'),
+            'order' => ['id' => 42],
+        ]);
+
+        $payload = $this->rpc->getLastCall()['payload'];
+        Assert::instanceOf($payload, LogEntry::class);
+        Assert::same($payload->getMessage(), 'Order created');
+        Assert::same(self::attributes($payload), [
+            'created_at' => '2024-02-03T04:05:06+00:00',
+            'order' => '{"id":42}',
+        ]);
+    }
+
+    public function testLogUsesCustomCallableProcessor(): void
+    {
+        $logger = new RpcLogger($this->appLogger, static fn(array $context): array => ['keys' => \array_keys($context)]);
+
+        $logger->warning('Custom', ['a' => 1, 'b' => 2]);
+
+        $lastCall = $this->rpc->getLastCall();
+        Assert::same($lastCall['method'], 'WarningWithContext');
+        Assert::same(self::attributes($lastCall['payload']), ['keys' => '["a","b"]']);
+    }
+
+    public function testLogWithStringableLevel(): void
+    {
+        $level = new class implements \Stringable {
+            public function __toString(): string
+            {
+                return 'NOTICE';
+            }
+        };
+
+        $this->rpcLogger->log($level, 'Test message');
+
+        Assert::same($this->rpc->getLastCall()['method'], 'Info');
+    }
+
+    public function testLogWithLogStringLevel(): void
+    {
+        $this->rpcLogger->log('log', 'Test message', ['key' => 'value']);
+
+        Assert::same($this->rpc->getLastCall()['method'], 'LogWithContext');
+    }
+
     #[BeforeTest]
     protected function setUp(): void
     {
@@ -712,5 +760,18 @@ final class RpcLoggerTest
     {
         // Reset the RPC spy after each test to ensure clean state
         $this->rpc->reset();
+    }
+
+    /**
+     * @return array<string, string> Attribute values as encoded by the app logger.
+     */
+    private static function attributes(LogEntry $entry): array
+    {
+        $result = [];
+        foreach ($entry->getLogAttrs() as $attr) {
+            $result[$attr->getKey()] = $attr->getValue();
+        }
+
+        return $result;
     }
 }
