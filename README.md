@@ -85,8 +85,7 @@ $logger->info('User logged in', [
 
 // Using the generic log method
 $logger->log(\Psr\Log\LogLevel::ERROR, 'Something went wrong', [
-    'exception' => $exception->getMessage(),
-    'trace' => $exception->getTraceAsString()
+    'exception' => $exception, // sent as class, message, code, file, line and trace
 ]);
 ```
 
@@ -154,10 +153,10 @@ By default, `RpcLogger` uses `DefaultProcessor` which can handle:
 - Scalar values (string, int, float, bool)
 - Arrays and nested arrays
 - Resources (converted to resource type description)
-- Objects via built-in object processors:
+- Objects via built-in object processors, tried in this order (the first one that accepts the object wins):
   - **DateTimeProcessor**: Converts `\DateTimeInterface` objects to ISO 8601 format (ATOM)
-  - **StringableProcessor**: Converts `\Stringable` objects to their string representation
   - **ThrowableProcessor**: Converts exceptions/errors to structured arrays with class, message, code, file, line, and trace
+  - **StringableProcessor**: Converts `\Stringable` objects to their string representation
   - **FallbackProcessor**: Converts any other objects to arrays with class name and public properties
 
 ```php
