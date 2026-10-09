@@ -37,8 +37,9 @@ final class DefaultProcessor
         $self = new self();
         $self->processors = [
             new DateTimeProcessor(),
-            new StringableProcessor(),
+            // Before StringableProcessor: every \Throwable is also \Stringable
             new ThrowableProcessor(),
+            new StringableProcessor(),
             new FallbackProcessor(),
         ];
         return $self;
