@@ -2,15 +2,18 @@
 
 declare(strict_types=1);
 
-namespace Context\ObjectProcessor;
+namespace RoadRunner\PsrLogger\Tests\Unit\Context\ObjectProcessor;
 
-use PHPUnit\Framework\Attributes\CoversClass;
-use PHPUnit\Framework\Attributes\DataProvider;
-use PHPUnit\Framework\TestCase;
+use Testo\Data\DataProvider;
+use Testo\Codecov\Covers;
+use Testo\Test;
+use Testo\Assert;
+use Testo\Lifecycle\BeforeTest;
 use RoadRunner\PsrLogger\Context\ObjectProcessor\FallbackProcessor;
 
-#[CoversClass(FallbackProcessor::class)]
-class FallbackProcessorTest extends TestCase
+#[Covers(FallbackProcessor::class)]
+#[Test]
+final class FallbackProcessorTest
 {
     private FallbackProcessor $processor;
 
@@ -45,10 +48,11 @@ class FallbackProcessorTest extends TestCase
         $result = $this->processor->process($value, $recursiveProcessor);
 
         // FallbackProcessor should be able to process any object
-        $this->assertTrue($this->processor->canProcess($value));
-        $this->assertSame($expectedType, $result);
+        Assert::true($this->processor->canProcess($value));
+        Assert::same($result, $expectedType);
     }
 
+    #[BeforeTest]
     protected function setUp(): void
     {
         $this->processor = new FallbackProcessor();

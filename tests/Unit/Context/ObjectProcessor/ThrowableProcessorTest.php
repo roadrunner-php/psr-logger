@@ -2,15 +2,18 @@
 
 declare(strict_types=1);
 
-namespace Context\ObjectProcessor;
+namespace RoadRunner\PsrLogger\Tests\Unit\Context\ObjectProcessor;
 
-use PHPUnit\Framework\Attributes\CoversClass;
-use PHPUnit\Framework\Attributes\DataProvider;
-use PHPUnit\Framework\TestCase;
+use Testo\Data\DataProvider;
+use Testo\Codecov\Covers;
+use Testo\Test;
+use Testo\Assert;
+use Testo\Lifecycle\BeforeTest;
 use RoadRunner\PsrLogger\Context\ObjectProcessor\ThrowableProcessor;
 
-#[CoversClass(ThrowableProcessor::class)]
-class ThrowableProcessorTest extends TestCase
+#[Covers(ThrowableProcessor::class)]
+#[Test]
+final class ThrowableProcessorTest
 {
     private ThrowableProcessor $processor;
 
@@ -35,13 +38,13 @@ class ThrowableProcessorTest extends TestCase
     #[DataProvider('throwableProvider')]
     public function testCanProcessThrowable(\Throwable $throwable): void
     {
-        $this->assertTrue($this->processor->canProcess($throwable));
+        Assert::true($this->processor->canProcess($throwable));
     }
 
     #[DataProvider('nonThrowableProvider')]
     public function testCannotProcessNonThrowable(mixed $value): void
     {
-        $this->assertFalse($this->processor->canProcess($value));
+        Assert::false($this->processor->canProcess($value));
     }
 
     public function testProcessException(): void
@@ -51,16 +54,14 @@ class ThrowableProcessorTest extends TestCase
 
         $result = $this->processor->process($exception, $recursiveProcessor);
 
-        $this->assertIsArray($result);
-        $this->assertSame('RuntimeException', $result['class']);
-        $this->assertSame('Test error message', $result['message']);
-        $this->assertSame(500, $result['code']);
-        $this->assertArrayHasKey('file', $result);
-        $this->assertArrayHasKey('line', $result);
-        $this->assertArrayHasKey('trace', $result);
-        $this->assertIsString($result['file']);
-        $this->assertIsInt($result['line']);
-        $this->assertIsString($result['trace']);
+        Assert::array($result);
+        Assert::same($result['class'], 'RuntimeException');
+        Assert::same($result['message'], 'Test error message');
+        Assert::same($result['code'], 500);
+        Assert::array($result)->hasKeys('file')->hasKeys('line')->hasKeys('trace');
+        Assert::string($result['file']);
+        Assert::int($result['line']);
+        Assert::string($result['trace']);
     }
 
     public function testProcessError(): void
@@ -70,10 +71,10 @@ class ThrowableProcessorTest extends TestCase
 
         $result = $this->processor->process($error, $recursiveProcessor);
 
-        $this->assertIsArray($result);
-        $this->assertSame('Error', $result['class']);
-        $this->assertSame('Test error', $result['message']);
-        $this->assertSame(123, $result['code']);
+        Assert::array($result);
+        Assert::same($result['class'], 'Error');
+        Assert::same($result['message'], 'Test error');
+        Assert::same($result['code'], 123);
     }
 
     public function testProcessCustomException(): void
@@ -83,12 +84,13 @@ class ThrowableProcessorTest extends TestCase
 
         $result = $this->processor->process($customException, $recursiveProcessor);
 
-        $this->assertIsArray($result);
-        $this->assertTrue(\str_contains($result['class'], 'Exception@anonymous'));
-        $this->assertSame('Custom message', $result['message']);
-        $this->assertSame(999, $result['code']);
+        Assert::array($result);
+        Assert::true(\str_contains($result['class'], 'Exception@anonymous'));
+        Assert::same($result['message'], 'Custom message');
+        Assert::same($result['code'], 999);
     }
 
+    #[BeforeTest]
     protected function setUp(): void
     {
         $this->processor = new ThrowableProcessor();

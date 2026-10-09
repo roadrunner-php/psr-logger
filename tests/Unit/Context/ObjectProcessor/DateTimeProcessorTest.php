@@ -2,32 +2,35 @@
 
 declare(strict_types=1);
 
-namespace Context\ObjectProcessor;
+namespace RoadRunner\PsrLogger\Tests\Unit\Context\ObjectProcessor;
 
-use PHPUnit\Framework\Attributes\CoversClass;
-use PHPUnit\Framework\TestCase;
+use Testo\Codecov\Covers;
+use Testo\Test;
+use Testo\Assert;
+use Testo\Lifecycle\BeforeTest;
 use RoadRunner\PsrLogger\Context\ObjectProcessor\DateTimeProcessor;
 
-#[CoversClass(DateTimeProcessor::class)]
-class DateTimeProcessorTest extends TestCase
+#[Covers(DateTimeProcessor::class)]
+#[Test]
+final class DateTimeProcessorTest
 {
     private DateTimeProcessor $processor;
 
     public function testCanProcessDateTime(): void
     {
         $dateTime = new \DateTime();
-        $this->assertTrue($this->processor->canProcess($dateTime));
+        Assert::true($this->processor->canProcess($dateTime));
     }
 
     public function testCanProcessDateTimeImmutable(): void
     {
         $dateTime = new \DateTimeImmutable();
-        $this->assertTrue($this->processor->canProcess($dateTime));
+        Assert::true($this->processor->canProcess($dateTime));
     }
 
     public function testCannotProcessNonDateTime(): void
     {
-        $this->assertFalse($this->processor->canProcess(new \stdClass()));
+        Assert::false($this->processor->canProcess(new \stdClass()));
     }
 
     public function testProcessDateTime(): void
@@ -37,7 +40,7 @@ class DateTimeProcessorTest extends TestCase
 
         $result = $this->processor->process($dateTime, $recursiveProcessor);
 
-        $this->assertSame('2023-01-01T12:00:00+00:00', $result);
+        Assert::same($result, '2023-01-01T12:00:00+00:00');
     }
 
     public function testProcessDateTimeImmutable(): void
@@ -47,9 +50,10 @@ class DateTimeProcessorTest extends TestCase
 
         $result = $this->processor->process($dateTime, $recursiveProcessor);
 
-        $this->assertSame('2023-06-15T09:30:00+02:00', $result);
+        Assert::same($result, '2023-06-15T09:30:00+02:00');
     }
 
+    #[BeforeTest]
     protected function setUp(): void
     {
         $this->processor = new DateTimeProcessor();

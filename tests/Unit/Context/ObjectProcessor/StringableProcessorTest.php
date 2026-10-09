@@ -2,15 +2,18 @@
 
 declare(strict_types=1);
 
-namespace Context\ObjectProcessor;
+namespace RoadRunner\PsrLogger\Tests\Unit\Context\ObjectProcessor;
 
-use PHPUnit\Framework\Attributes\CoversClass;
-use PHPUnit\Framework\Attributes\DataProvider;
-use PHPUnit\Framework\TestCase;
+use Testo\Data\DataProvider;
+use Testo\Codecov\Covers;
+use Testo\Test;
+use Testo\Assert;
+use Testo\Lifecycle\BeforeTest;
 use RoadRunner\PsrLogger\Context\ObjectProcessor\StringableProcessor;
 
-#[CoversClass(StringableProcessor::class)]
-class StringableProcessorTest extends TestCase
+#[Covers(StringableProcessor::class)]
+#[Test]
+final class StringableProcessorTest
 {
     private StringableProcessor $processor;
 
@@ -36,13 +39,13 @@ class StringableProcessorTest extends TestCase
             }
         };
 
-        $this->assertTrue($this->processor->canProcess($stringable));
+        Assert::true($this->processor->canProcess($stringable));
     }
 
     #[DataProvider('nonStringableProvider')]
     public function testCannotProcessNonStringable(mixed $value, $expected): void
     {
-        $this->assertSame($expected, $this->processor->canProcess($value));
+        Assert::same($this->processor->canProcess($value), $expected);
     }
 
     public function testProcessStringable(): void
@@ -57,7 +60,7 @@ class StringableProcessorTest extends TestCase
         $recursiveProcessor = static fn($v) => $v;
         $result = $this->processor->process($stringable, $recursiveProcessor);
 
-        $this->assertSame('converted string', $result);
+        Assert::same($result, 'converted string');
     }
 
     public function testProcessStringableWithComplexLogic(): void
@@ -74,7 +77,7 @@ class StringableProcessorTest extends TestCase
         $recursiveProcessor = static fn($v) => $v;
         $result = $this->processor->process($stringable, $recursiveProcessor);
 
-        $this->assertSame('COMPLEX DATA', $result);
+        Assert::same($result, 'COMPLEX DATA');
     }
 
     public function testProcessStringableWithEmptyString(): void
@@ -89,9 +92,10 @@ class StringableProcessorTest extends TestCase
         $recursiveProcessor = static fn($v) => $v;
         $result = $this->processor->process($stringable, $recursiveProcessor);
 
-        $this->assertSame('', $result);
+        Assert::same($result, '');
     }
 
+    #[BeforeTest]
     protected function setUp(): void
     {
         $this->processor = new StringableProcessor();
