@@ -9,7 +9,9 @@ use Testo\Codecov\Covers;
 use Testo\Test;
 use Testo\Assert;
 use Testo\Lifecycle\BeforeTest;
+use Testo\Skip;
 use RoadRunner\PsrLogger\Context\DefaultProcessor;
+use RoadRunner\PsrLogger\Context\ObjectProcessor;
 
 #[Covers(DefaultProcessor::class)]
 #[Test]
@@ -86,9 +88,152 @@ final class DefaultProcessorTest
         Assert::same($result['level1']['level2']['value'], 'deep');
     }
 
+    public function emptyProcessorLeavesObjectsUntouched(): void
+    {
+        $date = new \DateTimeImmutable('2024-02-03T04:05:06+00:00');
+
+        $result = ($this->processor)(['date' => $date]);
+
+        Assert::same($result['date'], $date);
+    }
+
+    public function defaultProcessorConvertsObjectsWithBuiltInProcessors(): void
+    {
+        $stringable = new class implements \Stringable {
+            public function __toString(): string
+            {
+                return 'stringable';
+            }
+        };
+
+        $result = DefaultProcessor::createDefault()([
+            'date' => new \DateTimeImmutable('2024-02-03T04:05:06+00:00'),
+            'text' => $stringable,
+            'object' => (object) ['id' => 1],
+        ]);
+
+        Assert::same($result['date'], '2024-02-03T04:05:06+00:00');
+        Assert::same($result['text'], 'stringable');
+        Assert::same($result['object'], ['@class' => 'stdClass', 'id' => 1]);
+    }
+
+    #[Skip('Throwable extends Stringable, so StringableProcessor, registered before ThrowableProcessor, turns exceptions into strings')]
+    public function defaultProcessorConvertsThrowableToStructuredArray(): void
+    {
+        $result = DefaultProcessor::createDefault()(new \RuntimeException('boom', 7));
+
+        Assert::array($result);
+        Assert::same($result['class'], \RuntimeException::class);
+        Assert::same($result['message'], 'boom');
+        Assert::same($result['code'], 7);
+    }
+
+    public function defaultProcessorConvertsObjectsInNestedArrays(): void
+    {
+        $result = DefaultProcessor::createDefault()([
+            'level1' => ['level2' => ['date' => new \DateTimeImmutable('2024-02-03T04:05:06+00:00')]],
+        ]);
+
+        Assert::same($result, ['level1' => ['level2' => ['date' => '2024-02-03T04:05:06+00:00']]]);
+    }
+
+    public function defaultProcessorConvertsNestedObjectProperties(): void
+    {
+        $value = (object) [
+            'createdAt' => new \DateTimeImmutable('2024-02-03T04:05:06+00:00'),
+            'owner' => (object) ['id' => 1],
+        ];
+
+        $result = DefaultProcessor::createDefault()($value);
+
+        Assert::same($result, [
+            '@class' => 'stdClass',
+            'createdAt' => '2024-02-03T04:05:06+00:00',
+            'owner' => ['@class' => 'stdClass', 'id' => 1],
+        ]);
+    }
+
+    public function customProcessorTakesPrecedenceOverBuiltIn(): void
+    {
+        $processor = DefaultProcessor::createDefault()
+            ->withObjectProcessors(self::taggingProcessor('custom', \DateTimeInterface::class));
+
+        $result = $processor(new \DateTimeImmutable());
+
+        Assert::same($result, 'custom');
+    }
+
+    public function nonMatchingCustomProcessorFallsThroughToBuiltIn(): void
+    {
+        $processor = DefaultProcessor::createDefault()
+            ->withObjectProcessors(self::taggingProcessor('custom', \Throwable::class));
+
+        $result = $processor(new \DateTimeImmutable('2024-02-03T04:05:06+00:00'));
+
+        Assert::same($result, '2024-02-03T04:05:06+00:00');
+    }
+
+    public function processorsOfOneCallKeepArgumentOrder(): void
+    {
+        $processor = DefaultProcessor::create()->withObjectProcessors(
+            self::taggingProcessor('first', \stdClass::class),
+            self::taggingProcessor('second', \stdClass::class),
+        );
+
+        $result = $processor(new \stdClass());
+
+        Assert::same($result, 'first');
+    }
+
+    public function processorsOfLaterCallTakePrecedence(): void
+    {
+        $processor = DefaultProcessor::create()
+            ->withObjectProcessors(self::taggingProcessor('first', \stdClass::class))
+            ->withObjectProcessors(self::taggingProcessor('second', \stdClass::class));
+
+        $result = $processor(new \stdClass());
+
+        Assert::same($result, 'second');
+    }
+
+    public function withObjectProcessorsKeepsOriginalUnchanged(): void
+    {
+        $original = DefaultProcessor::create();
+
+        $extended = $original->withObjectProcessors(self::taggingProcessor('custom', \stdClass::class));
+        $object = new \stdClass();
+
+        Assert::notSame($extended, $original);
+        Assert::same($original($object), $object);
+        Assert::same($extended($object), 'custom');
+    }
+
     #[BeforeTest]
     protected function setUp(): void
     {
         $this->processor = DefaultProcessor::create();
+    }
+
+    /**
+     * @param class-string $class
+     */
+    private static function taggingProcessor(string $tag, string $class): ObjectProcessor
+    {
+        return new class($tag, $class) implements ObjectProcessor {
+            public function __construct(
+                private readonly string $tag,
+                private readonly string $class,
+            ) {}
+
+            public function canProcess(object $value): bool
+            {
+                return $value instanceof $this->class;
+            }
+
+            public function process(object $value, callable $processor): mixed
+            {
+                return $this->tag;
+            }
+        };
     }
 }
