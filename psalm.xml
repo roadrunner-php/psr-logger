@@ -15,7 +15,7 @@
         </ignoreFiles>
     </projectFiles>
     <issueHandlers>
-        <MissingOverrideAttribute errorLevel="suppress" />
+        <!-- RpcLogger is a public, extendable class: making it final is a BC break -->
         <ClassMustBeFinal errorLevel="suppress" />
     </issueHandlers>
     <forbiddenFunctions>

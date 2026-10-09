@@ -4,9 +4,13 @@ declare(strict_types=1);
 
 namespace RoadRunner\PsrLogger\Tests\Unit;
 
-use PHPUnit\Framework\Attributes\CoversClass;
-use PHPUnit\Framework\Attributes\DataProvider;
-use PHPUnit\Framework\TestCase;
+use Testo\Data\DataProvider;
+use Testo\Codecov\Covers;
+use Testo\Test;
+use Testo\Assert;
+use Testo\Expect;
+use Testo\Lifecycle\BeforeTest;
+use Testo\Lifecycle\AfterTest;
 use Psr\Log\InvalidArgumentException as PsrInvalidArgumentException;
 use Psr\Log\LogLevel as PsrLogLevel;
 use RoadRunner\AppLogger\DTO\V1\LogEntry;
@@ -16,8 +20,9 @@ use RoadRunner\PsrLogger\Context\DefaultProcessor;
 use RoadRunner\PsrLogger\Context\ObjectProcessor;
 use RoadRunner\PsrLogger\RpcLogger;
 
-#[CoversClass(RpcLogger::class)]
-class RpcLoggerTest extends TestCase
+#[Covers(RpcLogger::class)]
+#[Test]
+final class RpcLoggerTest
 {
     private RpcSpy $rpc;
     private AppLogger $appLogger;
@@ -45,7 +50,7 @@ class RpcLoggerTest extends TestCase
     {
         $logger = new RpcLogger($this->appLogger);
 
-        $this->assertInstanceOf(RpcLogger::class, $logger);
+        Assert::instanceOf($logger, RpcLogger::class);
     }
 
     #[DataProvider('emergencyLevelsProvider')]
@@ -56,10 +61,10 @@ class RpcLoggerTest extends TestCase
 
         $this->rpcLogger->log($level, $message, $context);
 
-        $this->assertSame(1, $this->rpc->getCallCount());
+        Assert::same($this->rpc->getCallCount(), 1);
         $lastCall = $this->rpc->getLastCall();
-        $this->assertSame('ErrorWithContext', $lastCall['method']);
-        $this->assertInstanceOf(LogEntry::class, $lastCall['payload']);
+        Assert::same($lastCall['method'], 'ErrorWithContext');
+        Assert::instanceOf($lastCall['payload'], LogEntry::class);
     }
 
     public function testLogWithWarningLevel(): void
@@ -69,10 +74,10 @@ class RpcLoggerTest extends TestCase
 
         $this->rpcLogger->log(PsrLogLevel::WARNING, $message, $context);
 
-        $this->assertSame(1, $this->rpc->getCallCount());
+        Assert::same($this->rpc->getCallCount(), 1);
         $lastCall = $this->rpc->getLastCall();
-        $this->assertSame('WarningWithContext', $lastCall['method']);
-        $this->assertInstanceOf(LogEntry::class, $lastCall['payload']);
+        Assert::same($lastCall['method'], 'WarningWithContext');
+        Assert::instanceOf($lastCall['payload'], LogEntry::class);
     }
 
     #[DataProvider('infoLevelsProvider')]
@@ -83,10 +88,10 @@ class RpcLoggerTest extends TestCase
 
         $this->rpcLogger->log($level, $message, $context);
 
-        $this->assertSame(1, $this->rpc->getCallCount());
+        Assert::same($this->rpc->getCallCount(), 1);
         $lastCall = $this->rpc->getLastCall();
-        $this->assertSame('InfoWithContext', $lastCall['method']);
-        $this->assertInstanceOf(LogEntry::class, $lastCall['payload']);
+        Assert::same($lastCall['method'], 'InfoWithContext');
+        Assert::instanceOf($lastCall['payload'], LogEntry::class);
     }
 
     public function testLogWithDebugLevel(): void
@@ -96,10 +101,10 @@ class RpcLoggerTest extends TestCase
 
         $this->rpcLogger->log(PsrLogLevel::DEBUG, $message, $context);
 
-        $this->assertSame(1, $this->rpc->getCallCount());
+        Assert::same($this->rpc->getCallCount(), 1);
         $lastCall = $this->rpc->getLastCall();
-        $this->assertSame('DebugWithContext', $lastCall['method']);
-        $this->assertInstanceOf(LogEntry::class, $lastCall['payload']);
+        Assert::same($lastCall['method'], 'DebugWithContext');
+        Assert::instanceOf($lastCall['payload'], LogEntry::class);
     }
 
     public function testLogWithStringableMessage(): void
@@ -113,10 +118,10 @@ class RpcLoggerTest extends TestCase
 
         $this->rpcLogger->log(PsrLogLevel::INFO, $stringableMessage);
 
-        $this->assertSame(1, $this->rpc->getCallCount());
+        Assert::same($this->rpc->getCallCount(), 1);
         $lastCall = $this->rpc->getLastCall();
-        $this->assertSame('Info', $lastCall['method']);
-        $this->assertSame('Stringable message', $lastCall['payload']);
+        Assert::same($lastCall['method'], 'Info');
+        Assert::same($lastCall['payload'], 'Stringable message');
     }
 
     public function testLogWithEmptyContext(): void
@@ -125,10 +130,10 @@ class RpcLoggerTest extends TestCase
 
         $this->rpcLogger->log(PsrLogLevel::INFO, $message);
 
-        $this->assertSame(1, $this->rpc->getCallCount());
+        Assert::same($this->rpc->getCallCount(), 1);
         $lastCall = $this->rpc->getLastCall();
-        $this->assertSame('Info', $lastCall['method']);
-        $this->assertSame($message, $lastCall['payload']);
+        Assert::same($lastCall['method'], 'Info');
+        Assert::same($lastCall['payload'], $message);
     }
 
     public function testLogWithCaseInsensitiveLevel(): void
@@ -138,10 +143,10 @@ class RpcLoggerTest extends TestCase
 
         $this->rpcLogger->log('ERROR', $message, $context);
 
-        $this->assertSame(1, $this->rpc->getCallCount());
+        Assert::same($this->rpc->getCallCount(), 1);
         $lastCall = $this->rpc->getLastCall();
-        $this->assertSame('ErrorWithContext', $lastCall['method']);
-        $this->assertInstanceOf(LogEntry::class, $lastCall['payload']);
+        Assert::same($lastCall['method'], 'ErrorWithContext');
+        Assert::instanceOf($lastCall['payload'], LogEntry::class);
     }
 
     public function testLogWithMixedCaseLevel(): void
@@ -151,58 +156,54 @@ class RpcLoggerTest extends TestCase
 
         $this->rpcLogger->log('Warning', $message, $context);
 
-        $this->assertSame(1, $this->rpc->getCallCount());
+        Assert::same($this->rpc->getCallCount(), 1);
         $lastCall = $this->rpc->getLastCall();
-        $this->assertSame('WarningWithContext', $lastCall['method']);
-        $this->assertInstanceOf(LogEntry::class, $lastCall['payload']);
+        Assert::same($lastCall['method'], 'WarningWithContext');
+        Assert::instanceOf($lastCall['payload'], LogEntry::class);
     }
 
     public function testLogWithEnumLevel(): void
     {
         $this->rpcLogger->log(LogLevelEnum::Warning, 'Test message');
 
-        $this->assertSame(1, $this->rpc->getCallCount());
+        Assert::same($this->rpc->getCallCount(), 1);
         $lastCall = $this->rpc->getLastCall();
-        $this->assertSame('Warning', $lastCall['method']);
+        Assert::same($lastCall['method'], 'Warning');
     }
 
     public function testLogWithRREnumLogLevel(): void
     {
         $this->rpcLogger->log(LogLevel::Log, 'Test message');
 
-        $this->assertSame(1, $this->rpc->getCallCount());
+        Assert::same($this->rpc->getCallCount(), 1);
         $lastCall = $this->rpc->getLastCall();
-        $this->assertSame('Log', $lastCall['method']);
+        Assert::same($lastCall['method'], 'Log');
     }
 
     public function testLogWithInvalidLevel(): void
     {
-        $this->expectException(PsrInvalidArgumentException::class);
-        $this->expectExceptionMessage('Invalid log level `invalid` provided.');
+        Expect::exception(PsrInvalidArgumentException::class)->withMessageContaining('Invalid log level `invalid` provided.');
 
         $this->rpcLogger->log('invalid', 'Test message');
     }
 
     public function testLogWithNonStringLevel(): void
     {
-        $this->expectException(PsrInvalidArgumentException::class);
-        $this->expectExceptionMessage('Invalid log level type provided.');
+        Expect::exception(PsrInvalidArgumentException::class)->withMessageContaining('Invalid log level type provided.');
 
         $this->rpcLogger->log(123, 'Test message');
     }
 
     public function testLogWithNullLevel(): void
     {
-        $this->expectException(PsrInvalidArgumentException::class);
-        $this->expectExceptionMessage('Invalid log level type provided.');
+        Expect::exception(PsrInvalidArgumentException::class)->withMessageContaining('Invalid log level type provided.');
 
         $this->rpcLogger->log(null, 'Test message');
     }
 
     public function testLogWithBooleanLevel(): void
     {
-        $this->expectException(PsrInvalidArgumentException::class);
-        $this->expectExceptionMessage('Invalid log level type provided.');
+        Expect::exception(PsrInvalidArgumentException::class)->withMessageContaining('Invalid log level type provided.');
 
         $this->rpcLogger->log(true, 'Test message');
     }
@@ -211,20 +212,20 @@ class RpcLoggerTest extends TestCase
     {
         $this->rpcLogger->log(PsrLogLevel::INFO, '');
 
-        $this->assertSame(1, $this->rpc->getCallCount());
+        Assert::same($this->rpc->getCallCount(), 1);
         $lastCall = $this->rpc->getLastCall();
-        $this->assertSame('Info', $lastCall['method']);
-        $this->assertSame('', $lastCall['payload']);
+        Assert::same($lastCall['method'], 'Info');
+        Assert::same($lastCall['payload'], '');
     }
 
     public function testLogWithNumericStringMessage(): void
     {
         $this->rpcLogger->log(PsrLogLevel::INFO, '12345');
 
-        $this->assertSame(1, $this->rpc->getCallCount());
+        Assert::same($this->rpc->getCallCount(), 1);
         $lastCall = $this->rpc->getLastCall();
-        $this->assertSame('Info', $lastCall['method']);
-        $this->assertSame('12345', $lastCall['payload']);
+        Assert::same($lastCall['method'], 'Info');
+        Assert::same($lastCall['payload'], '12345');
     }
 
     public function testLogWithEmptyContextArray(): void
@@ -234,10 +235,10 @@ class RpcLoggerTest extends TestCase
 
         $this->rpcLogger->log(PsrLogLevel::INFO, $message, $context);
 
-        $this->assertSame(1, $this->rpc->getCallCount());
+        Assert::same($this->rpc->getCallCount(), 1);
         $lastCall = $this->rpc->getLastCall();
-        $this->assertSame('Info', $lastCall['method']);
-        $this->assertSame($message, $lastCall['payload']);
+        Assert::same($lastCall['method'], 'Info');
+        Assert::same($lastCall['payload'], $message);
     }
 
     // Test PSR-3 LoggerTrait methods
@@ -248,9 +249,9 @@ class RpcLoggerTest extends TestCase
 
         $this->rpcLogger->emergency($message, $context);
 
-        $this->assertSame(1, $this->rpc->getCallCount());
+        Assert::same($this->rpc->getCallCount(), 1);
         $lastCall = $this->rpc->getLastCall();
-        $this->assertSame('ErrorWithContext', $lastCall['method']);
+        Assert::same($lastCall['method'], 'ErrorWithContext');
     }
 
     public function testAlertMethod(): void
@@ -260,9 +261,9 @@ class RpcLoggerTest extends TestCase
 
         $this->rpcLogger->alert($message, $context);
 
-        $this->assertSame(1, $this->rpc->getCallCount());
+        Assert::same($this->rpc->getCallCount(), 1);
         $lastCall = $this->rpc->getLastCall();
-        $this->assertSame('ErrorWithContext', $lastCall['method']);
+        Assert::same($lastCall['method'], 'ErrorWithContext');
     }
 
     public function testCriticalMethod(): void
@@ -272,9 +273,9 @@ class RpcLoggerTest extends TestCase
 
         $this->rpcLogger->critical($message, $context);
 
-        $this->assertSame(1, $this->rpc->getCallCount());
+        Assert::same($this->rpc->getCallCount(), 1);
         $lastCall = $this->rpc->getLastCall();
-        $this->assertSame('ErrorWithContext', $lastCall['method']);
+        Assert::same($lastCall['method'], 'ErrorWithContext');
     }
 
     public function testErrorMethod(): void
@@ -284,9 +285,9 @@ class RpcLoggerTest extends TestCase
 
         $this->rpcLogger->error($message, $context);
 
-        $this->assertSame(1, $this->rpc->getCallCount());
+        Assert::same($this->rpc->getCallCount(), 1);
         $lastCall = $this->rpc->getLastCall();
-        $this->assertSame('ErrorWithContext', $lastCall['method']);
+        Assert::same($lastCall['method'], 'ErrorWithContext');
     }
 
     public function testWarningMethod(): void
@@ -296,9 +297,9 @@ class RpcLoggerTest extends TestCase
 
         $this->rpcLogger->warning($message, $context);
 
-        $this->assertSame(1, $this->rpc->getCallCount());
+        Assert::same($this->rpc->getCallCount(), 1);
         $lastCall = $this->rpc->getLastCall();
-        $this->assertSame('WarningWithContext', $lastCall['method']);
+        Assert::same($lastCall['method'], 'WarningWithContext');
     }
 
     public function testNoticeMethod(): void
@@ -308,9 +309,9 @@ class RpcLoggerTest extends TestCase
 
         $this->rpcLogger->notice($message, $context);
 
-        $this->assertSame(1, $this->rpc->getCallCount());
+        Assert::same($this->rpc->getCallCount(), 1);
         $lastCall = $this->rpc->getLastCall();
-        $this->assertSame('InfoWithContext', $lastCall['method']);
+        Assert::same($lastCall['method'], 'InfoWithContext');
     }
 
     public function testInfoMethod(): void
@@ -320,9 +321,9 @@ class RpcLoggerTest extends TestCase
 
         $this->rpcLogger->info($message, $context);
 
-        $this->assertSame(1, $this->rpc->getCallCount());
+        Assert::same($this->rpc->getCallCount(), 1);
         $lastCall = $this->rpc->getLastCall();
-        $this->assertSame('InfoWithContext', $lastCall['method']);
+        Assert::same($lastCall['method'], 'InfoWithContext');
     }
 
     public function testDebugMethod(): void
@@ -332,9 +333,9 @@ class RpcLoggerTest extends TestCase
 
         $this->rpcLogger->debug($message, $context);
 
-        $this->assertSame(1, $this->rpc->getCallCount());
+        Assert::same($this->rpc->getCallCount(), 1);
         $lastCall = $this->rpc->getLastCall();
-        $this->assertSame('DebugWithContext', $lastCall['method']);
+        Assert::same($lastCall['method'], 'DebugWithContext');
     }
 
     public function testLogWithComplexContext(): void
@@ -352,9 +353,9 @@ class RpcLoggerTest extends TestCase
 
         $this->rpcLogger->log(PsrLogLevel::INFO, $message, $context);
 
-        $this->assertSame(1, $this->rpc->getCallCount());
+        Assert::same($this->rpc->getCallCount(), 1);
         $lastCall = $this->rpc->getLastCall();
-        $this->assertSame('InfoWithContext', $lastCall['method']);
+        Assert::same($lastCall['method'], 'InfoWithContext');
     }
 
     public function testLogWithScalarContext(): void
@@ -370,10 +371,10 @@ class RpcLoggerTest extends TestCase
 
         $this->rpcLogger->log(PsrLogLevel::INFO, $message, $context);
 
-        $this->assertSame(1, $this->rpc->getCallCount());
+        Assert::same($this->rpc->getCallCount(), 1);
         $lastCall = $this->rpc->getLastCall();
-        $this->assertSame('InfoWithContext', $lastCall['method']);
-        $this->assertInstanceOf(LogEntry::class, $lastCall['payload']);
+        Assert::same($lastCall['method'], 'InfoWithContext');
+        Assert::instanceOf($lastCall['payload'], LogEntry::class);
     }
 
     public function testLogWithDateTimeContext(): void
@@ -389,10 +390,10 @@ class RpcLoggerTest extends TestCase
 
         $this->rpcLogger->log(PsrLogLevel::INFO, $message, $context);
 
-        $this->assertSame(1, $this->rpc->getCallCount());
+        Assert::same($this->rpc->getCallCount(), 1);
         $lastCall = $this->rpc->getLastCall();
-        $this->assertSame('InfoWithContext', $lastCall['method']);
-        $this->assertInstanceOf(LogEntry::class, $lastCall['payload']);
+        Assert::same($lastCall['method'], 'InfoWithContext');
+        Assert::instanceOf($lastCall['payload'], LogEntry::class);
     }
 
     public function testLogWithExceptionContext(): void
@@ -407,10 +408,10 @@ class RpcLoggerTest extends TestCase
 
         $this->rpcLogger->log(PsrLogLevel::ERROR, $message, $context);
 
-        $this->assertSame(1, $this->rpc->getCallCount());
+        Assert::same($this->rpc->getCallCount(), 1);
         $lastCall = $this->rpc->getLastCall();
-        $this->assertSame('ErrorWithContext', $lastCall['method']);
-        $this->assertInstanceOf(LogEntry::class, $lastCall['payload']);
+        Assert::same($lastCall['method'], 'ErrorWithContext');
+        Assert::instanceOf($lastCall['payload'], LogEntry::class);
     }
 
     public function testLogWithStringableContext(): void
@@ -430,10 +431,10 @@ class RpcLoggerTest extends TestCase
 
         $this->rpcLogger->log(PsrLogLevel::INFO, $message, $context);
 
-        $this->assertSame(1, $this->rpc->getCallCount());
+        Assert::same($this->rpc->getCallCount(), 1);
         $lastCall = $this->rpc->getLastCall();
-        $this->assertSame('InfoWithContext', $lastCall['method']);
-        $this->assertInstanceOf(LogEntry::class, $lastCall['payload']);
+        Assert::same($lastCall['method'], 'InfoWithContext');
+        Assert::instanceOf($lastCall['payload'], LogEntry::class);
     }
 
     public function testLogWithNestedArrayContext(): void
@@ -455,10 +456,10 @@ class RpcLoggerTest extends TestCase
 
         $this->rpcLogger->log(PsrLogLevel::DEBUG, $message, $context);
 
-        $this->assertSame(1, $this->rpc->getCallCount());
+        Assert::same($this->rpc->getCallCount(), 1);
         $lastCall = $this->rpc->getLastCall();
-        $this->assertSame('DebugWithContext', $lastCall['method']);
-        $this->assertInstanceOf(LogEntry::class, $lastCall['payload']);
+        Assert::same($lastCall['method'], 'DebugWithContext');
+        Assert::instanceOf($lastCall['payload'], LogEntry::class);
     }
 
     public function testLogWithObjectContext(): void
@@ -477,10 +478,10 @@ class RpcLoggerTest extends TestCase
 
         $this->rpcLogger->log(PsrLogLevel::INFO, $message, $context);
 
-        $this->assertSame(1, $this->rpc->getCallCount());
+        Assert::same($this->rpc->getCallCount(), 1);
         $lastCall = $this->rpc->getLastCall();
-        $this->assertSame('InfoWithContext', $lastCall['method']);
-        $this->assertInstanceOf(LogEntry::class, $lastCall['payload']);
+        Assert::same($lastCall['method'], 'InfoWithContext');
+        Assert::instanceOf($lastCall['payload'], LogEntry::class);
     }
 
     public function testLogWithResourceContext(): void
@@ -497,10 +498,10 @@ class RpcLoggerTest extends TestCase
 
         \fclose($resource);
 
-        $this->assertSame(1, $this->rpc->getCallCount());
+        Assert::same($this->rpc->getCallCount(), 1);
         $lastCall = $this->rpc->getLastCall();
-        $this->assertSame('InfoWithContext', $lastCall['method']);
-        $this->assertInstanceOf(LogEntry::class, $lastCall['payload']);
+        Assert::same($lastCall['method'], 'InfoWithContext');
+        Assert::instanceOf($lastCall['payload'], LogEntry::class);
     }
 
     public function testLogWithMixedComplexContext(): void
@@ -536,10 +537,10 @@ class RpcLoggerTest extends TestCase
 
         $this->rpcLogger->log(PsrLogLevel::WARNING, $message, $context);
 
-        $this->assertSame(1, $this->rpc->getCallCount());
+        Assert::same($this->rpc->getCallCount(), 1);
         $lastCall = $this->rpc->getLastCall();
-        $this->assertSame('WarningWithContext', $lastCall['method']);
-        $this->assertInstanceOf(LogEntry::class, $lastCall['payload']);
+        Assert::same($lastCall['method'], 'WarningWithContext');
+        Assert::instanceOf($lastCall['payload'], LogEntry::class);
     }
 
     public function testCustomProcessorIntegration(): void
@@ -574,10 +575,10 @@ class RpcLoggerTest extends TestCase
 
         $logger->info('User action performed', $context);
 
-        $this->assertSame(1, $this->rpc->getCallCount());
+        Assert::same($this->rpc->getCallCount(), 1);
         $lastCall = $this->rpc->getLastCall();
-        $this->assertSame('InfoWithContext', $lastCall['method']);
-        $this->assertInstanceOf(LogEntry::class, $lastCall['payload']);
+        Assert::same($lastCall['method'], 'InfoWithContext');
+        Assert::instanceOf($lastCall['payload'], LogEntry::class);
     }
 
     public function testMultipleCustomProcessors(): void
@@ -613,7 +614,7 @@ class RpcLoggerTest extends TestCase
             }
         };
 
-        $processorManager = \RoadRunner\PsrLogger\Context\DefaultProcessor::createDefault()
+        $processorManager = DefaultProcessor::createDefault()
             ->withObjectProcessors($urlProcessor)
             ->withObjectProcessors($ccProcessor);
 
@@ -628,10 +629,10 @@ class RpcLoggerTest extends TestCase
 
         $logger->warning('Payment processed', $context);
 
-        $this->assertSame(1, $this->rpc->getCallCount());
+        Assert::same($this->rpc->getCallCount(), 1);
         $lastCall = $this->rpc->getLastCall();
-        $this->assertSame('WarningWithContext', $lastCall['method']);
-        $this->assertInstanceOf(LogEntry::class, $lastCall['payload']);
+        Assert::same($lastCall['method'], 'WarningWithContext');
+        Assert::instanceOf($lastCall['payload'], LogEntry::class);
     }
 
     public function testDefaultProcessorManagerWhenNoneProvided(): void
@@ -647,10 +648,10 @@ class RpcLoggerTest extends TestCase
 
         $logger->error('Test with default processors', $context);
 
-        $this->assertSame(1, $this->rpc->getCallCount());
+        Assert::same($this->rpc->getCallCount(), 1);
         $lastCall = $this->rpc->getLastCall();
-        $this->assertSame('ErrorWithContext', $lastCall['method']);
-        $this->assertInstanceOf(LogEntry::class, $lastCall['payload']);
+        Assert::same($lastCall['method'], 'ErrorWithContext');
+        Assert::instanceOf($lastCall['payload'], LogEntry::class);
     }
 
     public function testProcessorOrdering(): void
@@ -680,7 +681,7 @@ class RpcLoggerTest extends TestCase
             }
         };
 
-        $processorManager = \RoadRunner\PsrLogger\Context\DefaultProcessor::createDefault()
+        $processorManager = DefaultProcessor::createDefault()
             ->withObjectProcessors($firstProcessor)  // Added first, should be used
             ->withObjectProcessors($secondProcessor); // Added second, should be skipped
 
@@ -689,15 +690,64 @@ class RpcLoggerTest extends TestCase
         $context = ['number' => 42];
         $logger->debug('Ordering test', $context);
 
-        $this->assertSame(1, $this->rpc->getCallCount());
+        Assert::same($this->rpc->getCallCount(), 1);
         $lastCall = $this->rpc->getLastCall();
-        $this->assertSame('DebugWithContext', $lastCall['method']);
+        Assert::same($lastCall['method'], 'DebugWithContext');
 
         // The first processor should have been used
         // We can't directly inspect the processed context, but we know it was processed
-        $this->assertInstanceOf(LogEntry::class, $lastCall['payload']);
+        Assert::instanceOf($lastCall['payload'], LogEntry::class);
     }
 
+    public function testLogSendsProcessedContextAttributes(): void
+    {
+        $this->rpcLogger->info('Order created', [
+            'created_at' => new \DateTimeImmutable('2024-02-03T04:05:06+00:00'),
+            'order' => ['id' => 42],
+        ]);
+
+        $payload = $this->rpc->getLastCall()['payload'];
+        Assert::instanceOf($payload, LogEntry::class);
+        Assert::same($payload->getMessage(), 'Order created');
+        Assert::same(self::attributes($payload), [
+            'created_at' => '2024-02-03T04:05:06+00:00',
+            'order' => '{"id":42}',
+        ]);
+    }
+
+    public function testLogUsesCustomCallableProcessor(): void
+    {
+        $logger = new RpcLogger($this->appLogger, static fn(array $context): array => ['keys' => \array_keys($context)]);
+
+        $logger->warning('Custom', ['a' => 1, 'b' => 2]);
+
+        $lastCall = $this->rpc->getLastCall();
+        Assert::same($lastCall['method'], 'WarningWithContext');
+        Assert::same(self::attributes($lastCall['payload']), ['keys' => '["a","b"]']);
+    }
+
+    public function testLogWithStringableLevel(): void
+    {
+        $level = new class implements \Stringable {
+            public function __toString(): string
+            {
+                return 'NOTICE';
+            }
+        };
+
+        $this->rpcLogger->log($level, 'Test message');
+
+        Assert::same($this->rpc->getLastCall()['method'], 'Info');
+    }
+
+    public function testLogWithLogStringLevel(): void
+    {
+        $this->rpcLogger->log('log', 'Test message', ['key' => 'value']);
+
+        Assert::same($this->rpc->getLastCall()['method'], 'LogWithContext');
+    }
+
+    #[BeforeTest]
     protected function setUp(): void
     {
         $this->rpc = new RpcSpy();
@@ -705,9 +755,23 @@ class RpcLoggerTest extends TestCase
         $this->rpcLogger = new RpcLogger($this->appLogger);
     }
 
+    #[AfterTest]
     protected function tearDown(): void
     {
         // Reset the RPC spy after each test to ensure clean state
         $this->rpc->reset();
+    }
+
+    /**
+     * @return array<string, string> Attribute values as encoded by the app logger.
+     */
+    private static function attributes(LogEntry $entry): array
+    {
+        $result = [];
+        foreach ($entry->getLogAttrs() as $attr) {
+            $result[$attr->getKey()] = $attr->getValue();
+        }
+
+        return $result;
     }
 }

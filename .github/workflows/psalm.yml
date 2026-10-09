@@ -1,10 +1,13 @@
 on:
   push:
     branches:
-      - '*.*'
+      - '1.x'
   pull_request: null
 
 name: static analysis
+
+permissions:
+  contents: read
 
 jobs:
   psalm:
@@ -12,5 +15,3 @@ jobs:
     with:
       os: >-
         ['ubuntu-latest']
-      php: >-
-        ['8.1']
