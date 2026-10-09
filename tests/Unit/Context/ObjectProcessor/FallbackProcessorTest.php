@@ -9,7 +9,7 @@ use Testo\Codecov\Covers;
 use Testo\Test;
 use Testo\Assert;
 use Testo\Lifecycle\BeforeTest;
-use Testo\Skip;
+use RoadRunner\PsrLogger\Context\DefaultProcessor;
 use RoadRunner\PsrLogger\Context\ObjectProcessor\FallbackProcessor;
 
 #[Covers(FallbackProcessor::class)]
@@ -80,16 +80,13 @@ final class FallbackProcessorTest
         $value = new \stdClass();
         $value->name = 'node';
         $value->self = $value;
+        $value->after = 'kept';
 
         $result = $this->processor->process($value, static fn(mixed $v): mixed => $v);
 
-        Assert::same($result, ['@class' => 'stdClass', 'name' => 'node']);
+        Assert::same($result, ['@class' => 'stdClass', 'name' => 'node', 'after' => 'kept']);
     }
 
-    /**
-     * With the default processor as the callback this recursion never ends and exhausts memory.
-     */
-    #[Skip('FallbackProcessor::process() has no `continue` after dropping a self-reference, so the object is still passed to the processor')]
     public function doesNotPassSelfReferenceToProcessor(): void
     {
         $value = new \stdClass();
@@ -102,6 +99,72 @@ final class FallbackProcessorTest
         });
 
         Assert::false(\in_array($value, $seen, true));
+    }
+
+    public function selfReferenceTerminatesWithDefaultProcessor(): void
+    {
+        $value = new \stdClass();
+        $value->name = 'node';
+        $value->self = $value;
+
+        $result = DefaultProcessor::createDefault()($value);
+
+        Assert::same($result, ['@class' => 'stdClass', 'name' => 'node']);
+    }
+
+    public function dropsPropertyReferencingAnOwner(): void
+    {
+        $parent = new \stdClass();
+        $child = new \stdClass();
+        $parent->name = 'parent';
+        $parent->child = $child;
+        $child->name = 'child';
+        $child->parent = $parent;
+
+        $result = DefaultProcessor::createDefault()($parent);
+
+        Assert::same($result, [
+            '@class' => 'stdClass',
+            'name' => 'parent',
+            'child' => ['@class' => 'stdClass', 'name' => 'child'],
+        ]);
+    }
+
+    public function exportsObjectReachedAgainThroughArrayAsClassOnly(): void
+    {
+        $value = new \stdClass();
+        $value->items = [$value, 'item'];
+
+        $result = DefaultProcessor::createDefault()($value);
+
+        Assert::same($result, ['@class' => 'stdClass', 'items' => [['@class' => 'stdClass'], 'item']]);
+    }
+
+    public function exportsSharedObjectInEveryPlace(): void
+    {
+        $shared = (object) ['id' => 1];
+        $value = (object) ['first' => $shared, 'second' => $shared];
+
+        $result = DefaultProcessor::createDefault()($value);
+
+        Assert::same($result, [
+            '@class' => 'stdClass',
+            'first' => ['@class' => 'stdClass', 'id' => 1],
+            'second' => ['@class' => 'stdClass', 'id' => 1],
+        ]);
+    }
+
+    public function exportsObjectFullyAgainAfterProcessorFailed(): void
+    {
+        $value = (object) ['id' => 1];
+        try {
+            $this->processor->process($value, static fn(mixed $v): never => throw new \RuntimeException('processor failed'));
+        } catch (\RuntimeException) {
+        }
+
+        $result = $this->processor->process($value, static fn(mixed $v): mixed => $v);
+
+        Assert::same($result, ['@class' => 'stdClass', 'id' => 1]);
     }
 
     #[BeforeTest]

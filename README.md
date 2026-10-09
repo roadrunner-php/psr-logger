@@ -157,7 +157,7 @@ By default, `RpcLogger` uses `DefaultProcessor` which can handle:
   - **DateTimeProcessor**: Converts `\DateTimeInterface` objects to ISO 8601 format (ATOM)
   - **ThrowableProcessor**: Converts exceptions/errors to structured arrays with class, message, code, file, line, and trace
   - **StringableProcessor**: Converts `\Stringable` objects to their string representation
-  - **FallbackProcessor**: Converts any other objects to arrays with class name and public properties
+  - **FallbackProcessor**: Converts any other objects to arrays with class name and public properties. Reference cycles are cut: a property pointing back to the object itself or to an object that contains it is left out, and an object reached again through an array is exported as its class name only
 
 ```php
 $logger->info('Order processed', [
