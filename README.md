@@ -1,15 +1,29 @@
-# RoadRunner PSR Logger
+<p align="center">
+    <a href="https://roadrunner.dev"><picture>
+        <source media="(prefers-color-scheme: dark)" srcset="https://github.com/roadrunner-server/.github/assets/8040338/e6bde856-4ec6-4a52-bd5b-bfe78736c1ff">
+        <img alt="RoadRunner" src="https://github.com/roadrunner-server/.github/assets/8040338/040fb694-1dd3-4865-9d29-8e0748c2c8b8" style="width: 6in; display: block">
+    </picture></a>
+</p>
+
+<p align="center">PSR-3 logger that writes to RoadRunner's logs over RPC</p>
+
+<div align="center">
+
+[![Documentation](https://img.shields.io/badge/Documentation-blue?style=for-the-badge&logo=gitbook&logoColor=white)](https://docs.roadrunner.dev/docs/logging-and-observability/applogger)
+[![Sponsor](https://img.shields.io/static/v1?style=for-the-badge&label=&message=Sponsor&logo=githubsponsors&logoColor=white&color=%23EA4AAA)](https://github.com/sponsors/roadrunner-server)
+
+[![Psalm Level](https://shepherd.dev/github/roadrunner-php/psr-logger/level.svg)](https://shepherd.dev/github/roadrunner-php/psr-logger)
+[![Type Coverage](https://shepherd.dev/github/roadrunner-php/psr-logger/coverage.svg)](https://shepherd.dev/github/roadrunner-php/psr-logger)
+
+</div>
+
+<br />
 
 A PSR-3 compatible logger implementation that integrates with RoadRunner's logging system via RPC calls. This package provides a bridge between PSR-3 logging standards and RoadRunner's centralized logging infrastructure.
 
-## RPC Logger vs STDERR Logger
+## Get Started
 
-The RPC logger provides several advantages over RoadRunner's built-in STDERR Logger:
-
-- **Log Level Control**: RPC Logger controls the actual log level sent to RoadRunner server, ensuring proper level filtering and display in RoadRunner logs. Messages from STDERR Logger are processed by RoadRunner with `info` level.
-- **Context Support**: RPC logger preserves structured context data (arrays, objects). STDERR Logger outputs only the message string, ignoring context.
-
-## Installation
+### Installation
 
 ```bash
 composer require roadrunner/psr-logger
@@ -18,9 +32,21 @@ composer require roadrunner/psr-logger
 [![PHP](https://img.shields.io/packagist/php-v/roadrunner/psr-logger.svg?style=flat-square&logo=php)](https://packagist.org/packages/roadrunner/psr-logger)
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/roadrunner/psr-logger.svg?style=flat-square&logo=packagist)](https://packagist.org/packages/roadrunner/psr-logger)
 [![License](https://img.shields.io/packagist/l/roadrunner/psr-logger.svg?style=flat-square)](LICENSE.md)
-[![Total DLoads](https://img.shields.io/packagist/dt/roadrunner/psr-logger.svg?style=flat-square)](https://packagist.org/packages/roadrunner/psr-logger/stats)
+[![Total Downloads](https://img.shields.io/packagist/dt/roadrunner/psr-logger.svg?style=flat-square)](https://packagist.org/packages/roadrunner/psr-logger/stats)
 
-## Usage
+### Configuration
+
+The logger sends messages over RPC to the RoadRunner AppLogger plugin, so RPC must be enabled in `.rr.yaml`. The `app` logs channel controls the output format and the minimum level:
+
+```yaml
+rpc:
+  listen: tcp://127.0.0.1:6001
+
+logs:
+  channels:
+    app:
+      level: debug
+```
 
 ### Basic Setup
 
@@ -29,7 +55,7 @@ use RoadRunner\Logger\Logger as AppLogger;
 use RoadRunner\PsrLogger\RpcLogger;
 
 // Initialize the RoadRunner app logger
-$rpc = \Spiral\Goridge\RPC\RPC::create('127.0.0.1:6001');
+$rpc = \Spiral\Goridge\RPC\RPC::create('tcp://127.0.0.1:6001');
 $appLogger = new AppLogger($rpc);
 
 // Create the PSR-3 compatible logger
@@ -63,6 +89,13 @@ $logger->log(\Psr\Log\LogLevel::ERROR, 'Something went wrong', [
 ]);
 ```
 
+## RPC Logger vs STDERR Logger
+
+The RPC logger provides several advantages over RoadRunner's built-in STDERR Logger:
+
+- **Log Level Control**: RPC Logger controls the actual log level sent to RoadRunner server, ensuring proper level filtering and display in RoadRunner logs. Messages from STDERR Logger are processed by RoadRunner with `info` level.
+- **Context Support**: RPC logger preserves structured context data (arrays, objects). STDERR Logger outputs only the message string, ignoring context.
+
 ## Log Levels
 
 ### Supported Log Level Types
@@ -72,6 +105,7 @@ The logger accepts log levels in multiple formats:
 - **PSR-3 constants**: `\Psr\Log\LogLevel::ERROR`, `\Psr\Log\LogLevel::WARNING`
 - **Stringable objects**: Any object implementing `\Stringable` interface
 - **BackedEnum values**: PHP 8.1+ backed enums with string values
+- **RoadRunner levels**: `\RoadRunner\Logger\LogLevel` enum cases from `roadrunner-php/app-logger`
 
 ```php
 // String levels
@@ -106,6 +140,7 @@ The logger maps PSR-3 log levels to RoadRunner logging methods as follows:
 | notice      | info              |
 | info        | info              |
 | debug       | debug             |
+| log         | log               |
 
 ## Context Handling
 
@@ -145,6 +180,9 @@ $logger->info('Order processed', [
 The recommended approach is to extend `DefaultProcessor` with custom object processors using the `withObjectProcessors()` method. This allows you to add your own object handling while keeping all the built-in processors.
 
 ```php
+use RoadRunner\PsrLogger\Context\DefaultProcessor;
+use RoadRunner\PsrLogger\Context\ObjectProcessor;
+
 /**
  * @implements ObjectProcessor<ActiveRecord>
  */
