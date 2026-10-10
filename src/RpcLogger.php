@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace RoadRunner\PsrLogger;
 
+use Psr\Log\InvalidArgumentException as PsrInvalidArgumentException;
 use Psr\Log\LoggerInterface;
 use Psr\Log\LoggerTrait;
 use Psr\Log\LogLevel as PsrLogLevel;
-use Psr\Log\InvalidArgumentException as PsrInvalidArgumentException;
 use RoadRunner\Logger\Logger as AppLogger;
 use RoadRunner\Logger\LogLevel;
 use RoadRunner\PsrLogger\Context\DefaultProcessor;

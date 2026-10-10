@@ -4,13 +4,6 @@ declare(strict_types=1);
 
 namespace RoadRunner\PsrLogger\Tests\Unit;
 
-use Testo\Data\DataProvider;
-use Testo\Codecov\Covers;
-use Testo\Test;
-use Testo\Assert;
-use Testo\Expect;
-use Testo\Lifecycle\BeforeTest;
-use Testo\Lifecycle\AfterTest;
 use Psr\Log\InvalidArgumentException as PsrInvalidArgumentException;
 use Psr\Log\LogLevel as PsrLogLevel;
 use RoadRunner\AppLogger\DTO\V1\LogEntry;
@@ -19,6 +12,13 @@ use RoadRunner\Logger\LogLevel;
 use RoadRunner\PsrLogger\Context\DefaultProcessor;
 use RoadRunner\PsrLogger\Context\ObjectProcessor;
 use RoadRunner\PsrLogger\RpcLogger;
+use Testo\Assert;
+use Testo\Codecov\Covers;
+use Testo\Data\DataProvider;
+use Testo\Expect;
+use Testo\Lifecycle\AfterTest;
+use Testo\Lifecycle\BeforeTest;
+use Testo\Test;
 
 #[Covers(RpcLogger::class)]
 #[Test]

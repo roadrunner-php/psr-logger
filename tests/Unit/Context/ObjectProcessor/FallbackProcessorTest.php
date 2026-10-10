@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace RoadRunner\PsrLogger\Tests\Unit\Context\ObjectProcessor;
 
-use Testo\Data\DataProvider;
-use Testo\Codecov\Covers;
-use Testo\Test;
-use Testo\Assert;
-use Testo\Lifecycle\BeforeTest;
 use RoadRunner\PsrLogger\Context\DefaultProcessor;
 use RoadRunner\PsrLogger\Context\ObjectProcessor\FallbackProcessor;
+use Testo\Assert;
+use Testo\Codecov\Covers;
+use Testo\Data\DataProvider;
+use Testo\Lifecycle\BeforeTest;
+use Testo\Test;
 
 #[Covers(FallbackProcessor::class)]
 #[Test]

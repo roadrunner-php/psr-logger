@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace RoadRunner\PsrLogger\Tests\Unit\Context\ObjectProcessor;
 
-use Testo\Codecov\Covers;
-use Testo\Test;
-use Testo\Assert;
-use Testo\Lifecycle\BeforeTest;
 use RoadRunner\PsrLogger\Context\ObjectProcessor\DateTimeProcessor;
+use Testo\Assert;
+use Testo\Codecov\Covers;
+use Testo\Lifecycle\BeforeTest;
+use Testo\Test;
 
 #[Covers(DateTimeProcessor::class)]
 #[Test]
