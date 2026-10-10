@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.0](https://github.com/roadrunner-php/psr-logger/compare/1.1.0...1.2.0) (2026-10-10)
+
+
+### Features
+
+* support RoadRunner v3 ([3d58180](https://github.com/roadrunner-php/psr-logger/commit/3d581800a4c9aeac7c3707fb1cc428ae6f9a5761))
+
 ## [1.1.0](https://github.com/roadrunner-php/psr-logger/compare/1.0.0...1.1.0) (2026-10-09)
 
 
