@@ -105,7 +105,7 @@ The logger accepts log levels in multiple formats:
 - **PSR-3 constants**: `\Psr\Log\LogLevel::ERROR`, `\Psr\Log\LogLevel::WARNING`
 - **Stringable objects**: Any object implementing `\Stringable` interface
 - **BackedEnum values**: PHP 8.1+ backed enums with string values
-- **RoadRunner levels**: `\RoadRunner\Logger\LogLevel` enum cases from `roadrunner-php/app-logger`
+- **RoadRunner levels**: `\RoadRunner\Logger\LogLevel` enum cases from `roadrunner/app-logger`
 
 ```php
 // String levels
