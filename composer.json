@@ -45,6 +45,8 @@
     },
     "require-dev": {
         "buggregator/trap": "^1.13",
+        "llm/skills": "^1.14",
+        "roxblnfk/unpoly": "^1.8",
         "spiral/code-style": "^2.3.1",
         "symfony/polyfill-php83": "*",
         "testo/testo": "^0.10.55",
@@ -73,6 +75,9 @@
         }
     ],
     "config": {
+        "allow-plugins": {
+            "llm/skills": true
+        },
         "sort-packages": true,
         "audit": {
             "ignore": {
