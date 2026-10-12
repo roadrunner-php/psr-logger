@@ -1,13 +1,7 @@
-# Composer lock file
-composer.lock
-
-# IDEs
-/.idea
-/.vscode
-
-# Vendors
-/vendor
-**/vendor
-
-# Temp dirs & trash
-/runtime
+/.*/
+!/.github/
+/runtime/
+/vendor/
+/composer.lock
+/.env
+*.log
