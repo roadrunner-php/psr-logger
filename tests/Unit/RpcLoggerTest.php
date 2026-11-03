@@ -726,6 +726,61 @@ final class RpcLoggerTest
         Assert::same($value['code'], 7);
     }
 
+    public function testLogSendsNonFiniteFloatsAsStrings(): void
+    {
+        $this->rpcLogger->info('Ratio', ['nan' => \NAN, 'inf' => \INF, 'ninf' => -\INF, 'nested' => ['v' => \NAN]]);
+
+        Assert::same(self::attributes($this->rpc->getLastCall()['payload']), [
+            'nan' => 'NaN',
+            'inf' => 'INF',
+            'ninf' => '-INF',
+            'nested' => '{"v":"NaN"}',
+        ]);
+    }
+
+    public function testLogReplacesInvalidUtf8InContext(): void
+    {
+        $this->rpcLogger->info('Binary', [
+            "k\xFF" => "v\xFF",
+            'nested' => ["n\xFF" => "w\xFF"],
+            'exception' => new \RuntimeException("boom\xFF"),
+        ]);
+
+        $attributes = self::attributes($this->rpc->getLastCall()['payload']);
+        Assert::same($attributes["k\u{FFFD}"], "v\u{FFFD}");
+        Assert::same($attributes['nested'], "{\"n\\ufffd\":\"w\\ufffd\"}");
+        Assert::same(\json_decode($attributes['exception'], true)['message'], "boom\u{FFFD}");
+    }
+
+    public function testLogReplacesInvalidUtf8InMessage(): void
+    {
+        $this->rpcLogger->info("with context \xFF", ['a' => 1]);
+        Assert::same($this->rpc->getLastCall()['payload']->getMessage(), "with context \u{FFFD}");
+
+        $this->rpcLogger->info("without context \xFF");
+        Assert::same($this->rpc->getLastCall()['payload'], "without context \u{FFFD}");
+    }
+
+    public function testLogMakesCustomProcessorOutputEncodable(): void
+    {
+        $logger = new RpcLogger($this->appLogger, static fn(array $context): array => $context);
+
+        $logger->info('Custom', ['v' => \INF, 's' => "\xFF"]);
+
+        Assert::same(self::attributes($this->rpc->getLastCall()['payload']), ['v' => 'INF', 's' => "\u{FFFD}"]);
+    }
+
+    public function testLogStopsOnSelfReferencingArray(): void
+    {
+        $logger = new RpcLogger($this->appLogger, static fn(array $context): array => $context);
+        $context = ['a' => 1];
+        $context['self'] = &$context;
+
+        $logger->info('Cycle', $context);
+
+        Assert::same(self::attributes($this->rpc->getLastCall()['payload']), ['a' => '1']);
+    }
+
     public function testLogUsesCustomCallableProcessor(): void
     {
         $logger = new RpcLogger($this->appLogger, static fn(array $context): array => ['keys' => \array_keys($context)]);
