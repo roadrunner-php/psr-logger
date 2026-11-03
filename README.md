@@ -163,6 +163,14 @@ By default, `RpcLogger` uses `DefaultProcessor` which can handle:
   - **StringableProcessor**: Converts `\Stringable` objects to their string representation
   - **FallbackProcessor**: Converts any other objects to arrays with class name and public properties. Reference cycles are cut: a property pointing back to the object itself or to an object that contains it is left out, and an object reached again through an array is exported as its class name only
 
+Arrays and objects nested deeper than 10 levels, counting the context array itself as the first one, are replaced with the notice `Over 10 levels deep, aborting normalization`, and an array keeps its first 1000 items, followed by a `...` key with the notice `Over 1000 items (N total), aborting normalization`. This keeps large object graphs and arrays that reference themselves from flooding the log. Both limits can be changed:
+
+```php
+$processor = DefaultProcessor::createDefault()
+    ->withMaxDepth(5)
+    ->withMaxItems(100);
+```
+
 ```php
 $logger->info('Order processed', [
     'order_id' => 12345,

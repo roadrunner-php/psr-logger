@@ -9,6 +9,8 @@ use RoadRunner\PsrLogger\Context\ObjectProcessor;
 use Testo\Assert;
 use Testo\Codecov\Covers;
 use Testo\Data\DataProvider;
+use Testo\Data\DataSet;
+use Testo\Expect;
 use Testo\Lifecycle\BeforeTest;
 use Testo\Test;
 
@@ -235,10 +237,183 @@ final class DefaultProcessorTest
         Assert::same($extended($object), 'custom');
     }
 
+    public function keepsTenNestingLevels(): void
+    {
+        Assert::same(($this->processor)(self::nest(10)), self::nest(10));
+    }
+
+    public function replacesEleventhNestingLevelWithNotice(): void
+    {
+        Assert::same(
+            ($this->processor)(self::nest(11)),
+            self::nest(10, 'Over 10 levels deep, aborting normalization'),
+        );
+    }
+
+    public function limitsNestingOfObjects(): void
+    {
+        $processor = DefaultProcessor::createDefault()->withMaxDepth(2);
+        $object = (object) ['child' => (object) ['child' => (object) ['child' => null]]];
+
+        Assert::same($processor(['o' => $object]), [
+            'o' => [
+                '@class' => \stdClass::class,
+                'child' => 'Over 2 levels deep, aborting normalization',
+            ],
+        ]);
+    }
+
+    public function stopsOnSelfReferencingArray(): void
+    {
+        $value = ['a' => 1];
+        $value['self'] = &$value;
+
+        $result = DefaultProcessor::create()->withMaxDepth(2)($value);
+
+        Assert::same($result, [
+            'a' => 1,
+            'self' => ['a' => 1, 'self' => 'Over 2 levels deep, aborting normalization'],
+        ]);
+    }
+
+    public function restoresDepthAfterProcessorThrows(): void
+    {
+        $processor = DefaultProcessor::create()
+            ->withMaxDepth(2)
+            ->withObjectProcessors(new class implements ObjectProcessor {
+                public function canProcess(object $value): bool
+                {
+                    return true;
+                }
+
+                public function process(object $value, callable $processor): mixed
+                {
+                    throw new \RuntimeException('boom');
+                }
+            });
+
+        Expect::exception(\RuntimeException::class);
+        try {
+            $processor([new \stdClass()]);
+        } finally {
+            Assert::same($processor([['x']]), [['x']]);
+        }
+    }
+
+    public function namedArgumentsDoNotLetLaterCallDropEarlierProcessors(): void
+    {
+        $processor = DefaultProcessor::create()
+            ->withObjectProcessors(processor: self::taggingProcessor('first', \stdClass::class))
+            ->withObjectProcessors(processor: self::taggingProcessor('second', \DateTimeImmutable::class));
+
+        Assert::same($processor(new \stdClass()), 'first');
+        Assert::same($processor(new \DateTimeImmutable()), 'second');
+    }
+
+    public function keepsThousandItems(): void
+    {
+        $items = \range(1, 1000);
+
+        Assert::same(($this->processor)($items), $items);
+    }
+
+    public function replacesItemsOverThousandWithNotice(): void
+    {
+        $result = ($this->processor)(\range(1, 1002));
+
+        Assert::count($result, 1001);
+        Assert::same($result[999], 1000);
+        Assert::same($result['...'], 'Over 1000 items (1002 total), aborting normalization');
+    }
+
+    public function withMaxItemsLimitsEveryArray(): void
+    {
+        $processor = DefaultProcessor::create()->withMaxItems(1);
+
+        Assert::same($processor(['a' => ['b' => 1, 'c' => 2], 'd' => 3]), [
+            'a' => ['b' => 1, '...' => 'Over 1 items (2 total), aborting normalization'],
+            '...' => 'Over 1 items (2 total), aborting normalization',
+        ]);
+    }
+
+    public function withLimitsKeepsOriginalUnchanged(): void
+    {
+        $original = DefaultProcessor::create();
+
+        $original->withMaxDepth(1);
+        $original->withMaxItems(1);
+
+        Assert::same($original(self::nest(10)), self::nest(10));
+        Assert::same($original([1, 2]), [1, 2]);
+    }
+
+    #[DataSet([0], 'zero')]
+    #[DataSet([-1], 'negative')]
+    public function withMaxDepthRejectsLimitBelowOne(int $levels): void
+    {
+        Expect::exception(\InvalidArgumentException::class)
+            ->withMessage("Max depth must be at least 1, $levels given.");
+
+        DefaultProcessor::create()->withMaxDepth($levels);
+    }
+
+    public function withMaxDepthAcceptsOneLevel(): void
+    {
+        Assert::same(DefaultProcessor::create()->withMaxDepth(1)(['a' => []]), [
+            'a' => 'Over 1 levels deep, aborting normalization',
+        ]);
+    }
+
+    #[DataSet([0], 'zero')]
+    #[DataSet([-1], 'negative')]
+    public function withMaxItemsRejectsLimitBelowOne(int $items): void
+    {
+        Expect::exception(\InvalidArgumentException::class)
+            ->withMessage("Max items must be at least 1, $items given.");
+
+        DefaultProcessor::create()->withMaxItems($items);
+    }
+
+    public function copyMadeDuringProcessingStartsAtTopLevel(): void
+    {
+        $copier = new class implements ObjectProcessor {
+            public ?DefaultProcessor $copy = null;
+
+            public function canProcess(object $value): bool
+            {
+                return true;
+            }
+
+            public function process(object $value, callable $processor): mixed
+            {
+                \assert($processor instanceof DefaultProcessor);
+                $this->copy = $processor->withMaxItems(5);
+                return null;
+            }
+        };
+
+        DefaultProcessor::create()->withObjectProcessors($copier)(self::nest(9, new \stdClass()));
+
+        Assert::same($copier->copy?->__invoke(self::nest(10)), self::nest(10));
+    }
+
     #[BeforeTest]
     protected function setUp(): void
     {
         $this->processor = DefaultProcessor::create();
+    }
+
+    /**
+     * @param int<0, max> $levels Number of arrays wrapped around the leaf.
+     */
+    private static function nest(int $levels, mixed $leaf = 'leaf'): mixed
+    {
+        $value = $leaf;
+        for ($i = 0; $i < $levels; ++$i) {
+            $value = ['x' => $value];
+        }
+
+        return $value;
     }
 
     /**
