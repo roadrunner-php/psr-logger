@@ -51,7 +51,7 @@
         "symfony/polyfill-php83": "*",
         "testo/codecov": "^0.2.5",
         "testo/testo": "^0.10.55",
-        "vimeo/psalm": "^6 || ^7"
+        "vimeo/psalm": "^7.0.1"
     },
     "scripts": {
         "cs:diff": "php-cs-fixer fix --dry-run -v --diff",
