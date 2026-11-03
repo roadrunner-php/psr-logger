@@ -160,10 +160,11 @@ By default, `RpcLogger` uses `DefaultProcessor` which can handle:
 - Objects via built-in object processors, tried in this order (the first one that accepts the object wins):
   - **DateTimeProcessor**: Converts `\DateTimeInterface` objects to ISO 8601 format (ATOM)
   - **ThrowableProcessor**: Converts exceptions/errors to structured arrays with class, message, code, file, line, and trace
+  - **JsonSerializableProcessor**: Converts `\JsonSerializable` objects to the data their `jsonSerialize()` returns, without the `@class` marker. The data goes through the same processors, so a date in it is formatted as above rather than as `json_encode()` would do it. An object that is also `\Stringable` is logged as this data, not as its string
   - **StringableProcessor**: Converts `\Stringable` objects to their string representation
   - **FallbackProcessor**: Converts any other objects to arrays with class name and public properties. Reference cycles are cut: a property pointing back to the object itself or to an object that contains it is left out, and an object reached again through an array is exported as its class name only
 
-Arrays and objects nested deeper than 10 levels, counting the context array itself as the first one, are replaced with the notice `Over 10 levels deep, aborting normalization`, and an array keeps its first 1000 items, followed by a `...` key with the notice `Over 1000 items (N total), aborting normalization`. This keeps large object graphs and arrays that reference themselves from flooding the log. Both limits can be changed:
+Arrays and objects nested deeper than 10 levels, counting the context array itself as the first one, are replaced with the notice `Over 10 levels deep, aborting normalization`, and an array keeps its first 1000 items, followed by a `...` key with the notice `Over 1000 items (N total), aborting normalization`. This keeps large object graphs and arrays that reference themselves from flooding the log. A `\JsonSerializable` object takes one level, and one more for the array if its `jsonSerialize()` returns one. Both limits can be changed:
 
 ```php
 $processor = DefaultProcessor::createDefault()

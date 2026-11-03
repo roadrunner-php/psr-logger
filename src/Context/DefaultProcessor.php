@@ -6,6 +6,7 @@ namespace RoadRunner\PsrLogger\Context;
 
 use RoadRunner\PsrLogger\Context\ObjectProcessor\DateTimeProcessor;
 use RoadRunner\PsrLogger\Context\ObjectProcessor\FallbackProcessor;
+use RoadRunner\PsrLogger\Context\ObjectProcessor\JsonSerializableProcessor;
 use RoadRunner\PsrLogger\Context\ObjectProcessor\StringableProcessor;
 use RoadRunner\PsrLogger\Context\ObjectProcessor\ThrowableProcessor;
 
@@ -53,6 +54,8 @@ final class DefaultProcessor
             new DateTimeProcessor(),
             // Before StringableProcessor: every \Throwable is also \Stringable
             new ThrowableProcessor(),
+            // Before StringableProcessor: structured data reads better in a log than a string
+            new JsonSerializableProcessor(),
             new StringableProcessor(),
             new FallbackProcessor(),
         ];

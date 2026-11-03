@@ -157,6 +157,83 @@ final class DefaultProcessorTest
         Assert::same($result['error']['message'], 'boom');
     }
 
+    public function defaultProcessorExportsJsonSerializableData(): void
+    {
+        $user = new class implements \JsonSerializable, \Stringable {
+            private int $id = 7;
+
+            public function jsonSerialize(): array
+            {
+                return ['id' => $this->id, 'seen' => new \DateTimeImmutable('2024-02-03T04:05:06+00:00')];
+            }
+
+            public function __toString(): string
+            {
+                return 'user #7';
+            }
+        };
+
+        $result = DefaultProcessor::createDefault()(['user' => $user]);
+
+        Assert::same($result, ['user' => ['id' => 7, 'seen' => '2024-02-03T04:05:06+00:00']]);
+    }
+
+    public function defaultProcessorStopsJsonSerializableReturningItself(): void
+    {
+        $self = new class implements \JsonSerializable {
+            public function jsonSerialize(): mixed
+            {
+                return $this;
+            }
+        };
+
+        $result = DefaultProcessor::createDefault()->withMaxDepth(3)(['self' => $self]);
+
+        Assert::same($result, ['self' => 'Over 3 levels deep, aborting normalization']);
+    }
+
+    public function defaultProcessorCountsJsonSerializableAndItsDataAsTwoLevels(): void
+    {
+        $object = new class implements \JsonSerializable {
+            public function jsonSerialize(): array
+            {
+                return ['id' => 1];
+            }
+        };
+
+        Assert::same(DefaultProcessor::createDefault()->withMaxDepth(3)(['o' => $object]), ['o' => ['id' => 1]]);
+        Assert::same(DefaultProcessor::createDefault()->withMaxDepth(2)(['o' => $object]), [
+            'o' => 'Over 2 levels deep, aborting normalization',
+        ]);
+    }
+
+    public function defaultProcessorKeepsThrowableStructureOverJsonSerialize(): void
+    {
+        $exception = new class('boom') extends \Exception implements \JsonSerializable {
+            public function jsonSerialize(): array
+            {
+                return ['custom' => true];
+            }
+        };
+
+        $result = DefaultProcessor::createDefault()($exception);
+
+        Assert::array($result)->hasKeys('class', 'message', 'trace');
+        Assert::same($result['message'], 'boom');
+    }
+
+    public function defaultProcessorKeepsDateTimeFormatOverJsonSerialize(): void
+    {
+        $date = new class('2024-02-03T04:05:06+00:00') extends \DateTimeImmutable implements \JsonSerializable {
+            public function jsonSerialize(): array
+            {
+                return ['custom' => true];
+            }
+        };
+
+        Assert::same(DefaultProcessor::createDefault()($date), '2024-02-03T04:05:06+00:00');
+    }
+
     public function defaultProcessorConvertsObjectsInNestedArrays(): void
     {
         $result = DefaultProcessor::createDefault()([
