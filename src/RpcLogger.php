@@ -121,20 +121,41 @@ class RpcLogger implements LoggerInterface
     /**
      * `mb_scrub()` when ext-mbstring is loaded, a JSON round trip otherwise: the round trip holds several
      * copies of the string, too many for a large binary value.
+     *
+     * The extension is checked rather than the function: symfony/polyfill-mbstring defines `mb_scrub()`,
+     * which drops invalid bytes, and can empty a string that ends in a cut character.
+     *
+     * Both give the same result, and CI always has ext-mbstring, so no test can tell them apart.
+     *
+     * @infection-ignore-all
      */
     private static function substituteInvalidUtf8(string $value): string
     {
-        if (\function_exists('mb_scrub')) {
-            // mb_scrub() substitutes `?` by default
-            $substitute = \mb_substitute_character();
-            \mb_substitute_character(0xFFFD);
-            try {
-                return \mb_scrub($value, 'UTF-8');
-            } finally {
-                \mb_substitute_character($substitute);
-            }
-        }
+        /** @var null|\Closure(string): string $substitute */
+        static $substitute = null;
+        $substitute ??= \extension_loaded('mbstring') ? self::mbScrub(...) : self::jsonScrub(...);
 
+        return $substitute($value);
+    }
+
+    private static function mbScrub(string $value): string
+    {
+        // mb_scrub() substitutes `?` by default
+        $substitute = \mb_substitute_character();
+        \mb_substitute_character(0xFFFD);
+        try {
+            return \mb_scrub($value, 'UTF-8');
+        } finally {
+            \mb_substitute_character($substitute);
+        }
+    }
+
+    /**
+     * @codeCoverageIgnore
+     * @infection-ignore-all
+     */
+    private static function jsonScrub(string $value): string
+    {
         /** @var string $result A JSON string literal decodes to a string. */
         $result = \json_decode(\json_encode($value, \JSON_INVALID_UTF8_SUBSTITUTE | \JSON_THROW_ON_ERROR));
 
