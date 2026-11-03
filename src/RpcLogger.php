@@ -119,10 +119,22 @@ class RpcLogger implements LoggerInterface
     }
 
     /**
-     * A JSON round trip instead of `mb_scrub()`, which would require ext-mbstring.
+     * `mb_scrub()` when ext-mbstring is loaded, a JSON round trip otherwise: the round trip holds several
+     * copies of the string, too many for a large binary value.
      */
     private static function substituteInvalidUtf8(string $value): string
     {
+        if (\function_exists('mb_scrub')) {
+            // mb_scrub() substitutes `?` by default
+            $substitute = \mb_substitute_character();
+            \mb_substitute_character(0xFFFD);
+            try {
+                return \mb_scrub($value, 'UTF-8');
+            } finally {
+                \mb_substitute_character($substitute);
+            }
+        }
+
         /** @var string $result A JSON string literal decodes to a string. */
         $result = \json_decode(\json_encode($value, \JSON_INVALID_UTF8_SUBSTITUTE | \JSON_THROW_ON_ERROR));
 

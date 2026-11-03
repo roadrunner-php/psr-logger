@@ -821,6 +821,20 @@ final class RpcLoggerTest
         );
     }
 
+    public function testLogKeepsCallersMbstringSubstituteCharacter(): void
+    {
+        $substitute = \mb_substitute_character();
+        \mb_substitute_character('none');
+        try {
+            $this->rpcLogger->info("bad \xFF");
+
+            Assert::same($this->rpc->getLastCall()['payload'], "bad \u{FFFD}");
+            Assert::same(\mb_substitute_character(), 'none');
+        } finally {
+            \mb_substitute_character($substitute);
+        }
+    }
+
     public function testLogDropsOnlyArrayWithThrowingJsonSerializable(): void
     {
         $logger = new RpcLogger($this->appLogger, static fn(array $context): array => $context);
