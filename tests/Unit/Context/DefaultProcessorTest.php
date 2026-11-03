@@ -31,6 +31,10 @@ final class DefaultProcessorTest
             'simple array' => [[1, 2, 3], [1, 2, 3]],
             'associative array' => [['key' => 'value'], ['key' => 'value']],
             'resource' => [\fopen('php://memory', 'r'), 'stream resource'],
+            'nan' => [\NAN, 'NAN'],
+            'infinity' => [\INF, 'INF'],
+            'negative infinity' => [-\INF, '-INF'],
+            'nested nan' => [['a' => ['b' => \NAN]], ['a' => ['b' => 'NAN']]],
         ];
     }
 

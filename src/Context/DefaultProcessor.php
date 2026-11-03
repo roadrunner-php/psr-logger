@@ -61,6 +61,11 @@ final class DefaultProcessor
             return \get_resource_type($value) . ' resource';
         }
 
+        // JSON has no NaN or infinity
+        if (\is_float($value) && !\is_finite($value)) {
+            return (string) $value;
+        }
+
         if (\is_array($value)) {
             $value = \array_map($this, $value);
         }

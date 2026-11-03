@@ -49,6 +49,7 @@
         "roxblnfk/unpoly": "^1.8",
         "spiral/code-style": "^2.3.1",
         "symfony/polyfill-php83": "*",
+        "testo/codecov": "^0.2.5",
         "testo/testo": "^0.10.55",
         "vimeo/psalm": "^6 || ^7"
     },
