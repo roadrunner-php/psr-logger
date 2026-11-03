@@ -83,17 +83,31 @@ class RpcLogger implements LoggerInterface
             $result[\is_string($key) ? self::scrub($key) : $key] = match (true) {
                 \is_string($value) => self::scrub($value),
                 \is_float($value) && !\is_finite($value) => (string) $value,
-                // Encoded here rather than by app-logger to substitute invalid UTF-8 at any depth. With partial
-                // output a reference cycle becomes `null` and a non-finite float `0` instead of losing the attribute.
-                \is_array($value) => \json_encode(
-                    $value,
-                    \JSON_UNESCAPED_SLASHES | \JSON_UNESCAPED_UNICODE | \JSON_INVALID_UTF8_SUBSTITUTE | \JSON_PARTIAL_OUTPUT_ON_ERROR,
-                ),
+                \is_array($value) => self::encodeArray($value),
                 default => $value,
             };
         }
 
         return $result;
+    }
+
+    /**
+     * Encoded here rather than by app-logger to substitute invalid UTF-8 at any depth. With partial output,
+     * what JSON cannot hold (a reference cycle, a non-finite float) is replaced instead of losing the attribute.
+     *
+     * @param array<array-key, mixed> $value
+     */
+    private static function encodeArray(array $value): mixed
+    {
+        try {
+            return \json_encode(
+                $value,
+                \JSON_UNESCAPED_SLASHES | \JSON_UNESCAPED_UNICODE | \JSON_INVALID_UTF8_SUBSTITUTE | \JSON_PARTIAL_OUTPUT_ON_ERROR,
+            );
+        } catch (\Throwable) {
+            // A throwing jsonSerialize(): app-logger fails on it again and drops just this attribute
+            return $value;
+        }
     }
 
     /**

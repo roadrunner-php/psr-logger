@@ -821,6 +821,21 @@ final class RpcLoggerTest
         );
     }
 
+    public function testLogDropsOnlyArrayWithThrowingJsonSerializable(): void
+    {
+        $logger = new RpcLogger($this->appLogger, static fn(array $context): array => $context);
+        $throwing = new class implements \JsonSerializable {
+            public function jsonSerialize(): mixed
+            {
+                throw new \RuntimeException('Not serializable');
+            }
+        };
+
+        $logger->info('Broken', ['broken' => [$throwing], 'ok' => 1]);
+
+        Assert::same(self::attributes($this->rpc->getLastCall()['payload']), ['ok' => '1']);
+    }
+
     public function testLogSendsNonFiniteFloatInArrayOfCustomProcessorAsZero(): void
     {
         $logger = new RpcLogger($this->appLogger, static fn(array $context): array => $context);

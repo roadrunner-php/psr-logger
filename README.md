@@ -146,7 +146,7 @@ The logger maps PSR-3 log levels to RoadRunner logging methods as follows:
 
 The logger supports structured logging with context arrays. Context data is processed by a context processor before being passed to the underlying RoadRunner logger.
 
-RoadRunner drops a value it cannot encode, so before sending, invalid UTF-8 in the message and in context strings, keys and arrays at any depth is replaced with `U+FFFD`, and a `NAN`, `INF` or `-INF` value is sent as a string. In an array, a reference cycle becomes `null`; a non-finite float that a custom processor leaves in an array becomes `0`. Objects returned by a custom processor are sent as they are.
+RoadRunner drops a value it cannot encode, so before sending, invalid UTF-8 in the message and in context strings, keys and arrays at any depth is replaced with `U+FFFD`, and a `NAN`, `INF` or `-INF` value is sent as a string. With a custom processor, what JSON cannot hold inside an array is replaced as Monolog does instead of losing the attribute: a reference cycle or a resource becomes `null`, a non-finite float or a pure enum becomes `0`. Objects returned by a custom processor at the top level of the context are sent as they are.
 
 ### Default Context Processor
 
