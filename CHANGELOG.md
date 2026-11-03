@@ -1,5 +1,26 @@
 # Changelog
 
+## [1.3.0](https://github.com/roadrunner-php/psr-logger/compare/1.2.0...1.3.0) (2026-11-03)
+
+
+### Features
+
+* add `FlattenProcessor` to send nested context maps as dot-separated attributes ([#28](https://github.com/roadrunner-php/psr-logger/issues/28)) ([c0fa01f](https://github.com/roadrunner-php/psr-logger/commit/c0fa01fb20a437cc7c3ae21c45953a69369e3612))
+* export `JsonSerializable` objects in the log context by their `jsonSerialize()` data ([#26](https://github.com/roadrunner-php/psr-logger/issues/26)) ([ec01ac6](https://github.com/roadrunner-php/psr-logger/commit/ec01ac6c8269e07c0ed710309805d37e5c9c9117))
+* limit nesting depth and array size of the log context ([#25](https://github.com/roadrunner-php/psr-logger/issues/25)) ([751dadb](https://github.com/roadrunner-php/psr-logger/commit/751dadbf65cc30576cc3e06301017c2174c8375c))
+* log previous exceptions and cut exception traces to 8 frames ([#27](https://github.com/roadrunner-php/psr-logger/issues/27)) ([801cbd0](https://github.com/roadrunner-php/psr-logger/commit/801cbd0459c7864e434f3ff969bc809793353d9a))
+
+
+### Bug Fixes
+
+* keep context values app-logger cannot encode ([#23](https://github.com/roadrunner-php/psr-logger/issues/23)) ([2ccf9a7](https://github.com/roadrunner-php/psr-logger/commit/2ccf9a7270ba677f6be814db956f086ab60d3acb))
+* send context keys reserved by RoadRunner as `context.<key>` ([#24](https://github.com/roadrunner-php/psr-logger/issues/24)) ([13c6ce6](https://github.com/roadrunner-php/psr-logger/commit/13c6ce6bc1c321a8e09a862f610457dc081205b6))
+
+
+### Code Refactoring
+
+* take only an array of processed context in `encodable()` ([2ccf9a7](https://github.com/roadrunner-php/psr-logger/commit/2ccf9a7270ba677f6be814db956f086ab60d3acb))
+
 ## [1.2.0](https://github.com/roadrunner-php/psr-logger/compare/1.1.0...1.2.0) (2026-10-10)
 
 
