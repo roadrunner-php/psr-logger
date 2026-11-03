@@ -11,6 +11,7 @@ use Psr\Log\LogLevel as PsrLogLevel;
 use RoadRunner\Logger\Logger as AppLogger;
 use RoadRunner\Logger\LogLevel;
 use RoadRunner\PsrLogger\Context\DefaultProcessor;
+use Testo\Inline\TestInline;
 
 /**
  * @api
@@ -47,8 +48,10 @@ class RpcLogger implements LoggerInterface
         });
 
         // Process context data for structured logging using the processor manager
-        /** @var array<string, mixed> $processedContext A processor maps the context array to an array. */
-        $processedContext = self::encodable(($this->processor)($context));
+        /** @var array<array-key, mixed> $processed A processor maps the context array to an array. */
+        $processed = ($this->processor)($context);
+        /** @var array<string, mixed> $processedContext app-logger declares string keys, a list context works as well */
+        $processedContext = self::encodable($processed);
         $text = self::scrub((string) $message);
 
         match ($normalizedLevel) {
@@ -69,13 +72,12 @@ class RpcLogger implements LoggerInterface
      *
      * Strings and keys get valid UTF-8 for protobuf, non-finite floats become strings for JSON.
      * Objects are left to app-logger.
+     *
+     * @param array<array-key, mixed> $context
+     * @return array<array-key, mixed>
      */
-    private static function encodable(mixed $context): mixed
+    private static function encodable(array $context): array
     {
-        if (!\is_array($context)) {
-            return $context;
-        }
-
         $result = [];
         /** @var mixed $value */
         foreach ($context as $key => $value) {
@@ -151,9 +153,13 @@ class RpcLogger implements LoggerInterface
     }
 
     /**
-     * @codeCoverageIgnore
+     * Its flags leave nothing to mutate that a test could tell apart.
+     *
      * @infection-ignore-all
      */
+    #[TestInline(["v\xFF"], "v\u{FFFD}")]
+    #[TestInline(["a\xE2\x82"], "a\u{FFFD}")]
+    #[TestInline(['valid ж'], 'valid ж')]
     private static function jsonScrub(string $value): string
     {
         /** @var string $result A JSON string literal decodes to a string. */
