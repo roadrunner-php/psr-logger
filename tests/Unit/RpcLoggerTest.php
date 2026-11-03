@@ -10,6 +10,7 @@ use RoadRunner\AppLogger\DTO\V1\LogEntry;
 use RoadRunner\Logger\Logger as AppLogger;
 use RoadRunner\Logger\LogLevel;
 use RoadRunner\PsrLogger\Context\DefaultProcessor;
+use RoadRunner\PsrLogger\Context\FlattenProcessor;
 use RoadRunner\PsrLogger\Context\ObjectProcessor;
 use RoadRunner\PsrLogger\RpcLogger;
 use Testo\Assert;
@@ -930,6 +931,19 @@ final class RpcLoggerTest
         $logger->info('Custom', ['a' => 1]);
 
         Assert::same(self::attributes($this->rpc->getLastCall()['payload']), ['context.level' => 'x']);
+    }
+
+    public function testLogSendsFlattenedContextAsSeparateAttributes(): void
+    {
+        $logger = new RpcLogger($this->appLogger, new FlattenProcessor());
+
+        $logger->info('Order created', ['user' => ['id' => 7, 'name' => 'Ann'], 'tags' => ['new']]);
+
+        Assert::same(self::attributes($this->rpc->getLastCall()['payload']), [
+            'user.id' => '7',
+            'user.name' => 'Ann',
+            'tags' => '["new"]',
+        ]);
     }
 
     public function testLogUsesCustomCallableProcessor(): void

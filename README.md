@@ -188,6 +188,24 @@ $logger->info('Order processed', [
 ]);
 ```
 
+### Flat Context
+
+RoadRunner gets every context value as a string, so a nested array arrives as one JSON string: `customer={"id":67890,"email":"customer@example.com"}`. `FlattenProcessor` runs another processor, `DefaultProcessor` by default, and turns nested maps into dot-separated keys, so each value becomes an attribute of its own:
+
+```php
+use RoadRunner\PsrLogger\Context\FlattenProcessor;
+
+$logger = new RpcLogger($appLogger, new FlattenProcessor());
+
+// customer.id=67890 customer.email=customer@example.com tags=["new","vip"]
+$logger->info('Order processed', [
+    'customer' => ['id' => 67890, 'email' => 'customer@example.com'],
+    'tags' => ['new', 'vip'],
+]);
+```
+
+An array whose first key is an integer stays JSON: a list, including one with gaps after `array_filter()` or cut by the item limit. When two keys collide, as `a.b` and `['a' => ['b' => …]]` do, the first one wins. To flatten a customized processor, pass it in: `new FlattenProcessor($processor)`.
+
 ### Extending DefaultProcessor
 
 The recommended approach is to extend `DefaultProcessor` with custom object processors using the `withObjectProcessors()` method. This allows you to add your own object handling while keeping all the built-in processors.
