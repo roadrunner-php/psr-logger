@@ -394,6 +394,11 @@ final class DefaultProcessorTest
         Assert::same(($this->processor)($items), $items);
     }
 
+    public function keepsIntegerKeysOfArray(): void
+    {
+        Assert::same(($this->processor)([3 => 'a', 7 => 'b']), [3 => 'a', 7 => 'b']);
+    }
+
     public function replacesItemsOverThousandWithNotice(): void
     {
         $result = ($this->processor)(\range(1, 1002));

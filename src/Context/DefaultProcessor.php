@@ -142,17 +142,15 @@ final class DefaultProcessor
     private function processArray(array $value): array
     {
         $result = [];
-        $count = 0;
         /** @var mixed $item */
-        foreach ($value as $key => $item) {
-            if ($count === $this->maxItems) {
-                $result['...'] = \sprintf('Over %d items (%d total), aborting normalization', $this->maxItems, \count($value));
-                break;
-            }
-
+        foreach (\array_slice($value, 0, $this->maxItems, true) as $key => $item) {
             /** @var mixed */
             $result[$key] = $this($item);
-            ++$count;
+        }
+
+        $count = \count($value);
+        if ($count > $this->maxItems) {
+            $result['...'] = \sprintf('Over %d items (%d total), aborting normalization', $this->maxItems, $count);
         }
 
         return $result;
