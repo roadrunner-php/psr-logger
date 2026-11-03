@@ -148,6 +148,8 @@ The logger supports structured logging with context arrays. Context data is proc
 
 The RoadRunner app-logger client drops a value it cannot encode, so before sending, invalid UTF-8 in the message and in context strings, keys and arrays at any depth is replaced with `U+FFFD`, and a `NAN`, `INF` or `-INF` value is sent as a string. With a custom processor, what JSON cannot hold inside an array is replaced as Monolog does instead of losing the attribute: a reference cycle or a resource becomes `null`, a non-finite float or a pure enum becomes `0`. Objects returned by a custom processor at the top level of the context are sent as they are.
 
+Context keys `time`, `level`, `msg` and `logger` are sent as `context.time`, `context.level` and so on: RoadRunner prints attributes next to its own fields with these names, and a duplicate key would override the real time, level or message in JSON readers.
+
 ### Default Context Processor
 
 By default, `RpcLogger` uses `DefaultProcessor` which can handle:

@@ -896,6 +896,34 @@ final class RpcLoggerTest
         );
     }
 
+    public function testLogRenamesKeysReservedByRoadRunner(): void
+    {
+        $this->rpcLogger->warning('Reserved', [
+            'msg' => 'm',
+            'level' => 'l',
+            'user' => 'u',
+            'time' => 't',
+            'logger' => 'g',
+        ]);
+
+        Assert::same(self::attributes($this->rpc->getLastCall()['payload']), [
+            'context.msg' => 'm',
+            'context.level' => 'l',
+            'user' => 'u',
+            'context.time' => 't',
+            'context.logger' => 'g',
+        ]);
+    }
+
+    public function testLogRenamesReservedKeysProducedByCustomProcessor(): void
+    {
+        $logger = new RpcLogger($this->appLogger, static fn(array $context): array => ['level' => 'x']);
+
+        $logger->info('Custom', ['a' => 1]);
+
+        Assert::same(self::attributes($this->rpc->getLastCall()['payload']), ['context.level' => 'x']);
+    }
+
     public function testLogUsesCustomCallableProcessor(): void
     {
         $logger = new RpcLogger($this->appLogger, static fn(array $context): array => ['keys' => \array_keys($context)]);
