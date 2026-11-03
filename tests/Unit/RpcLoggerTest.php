@@ -731,10 +731,10 @@ final class RpcLoggerTest
         $this->rpcLogger->info('Ratio', ['nan' => \NAN, 'inf' => \INF, 'ninf' => -\INF, 'nested' => ['v' => \NAN]]);
 
         Assert::same(self::attributes($this->rpc->getLastCall()['payload']), [
-            'nan' => 'NaN',
+            'nan' => 'NAN',
             'inf' => 'INF',
             'ninf' => '-INF',
-            'nested' => '{"v":"NaN"}',
+            'nested' => '{"v":"NAN"}',
         ]);
     }
 
@@ -768,6 +768,22 @@ final class RpcLoggerTest
         $logger->info('Custom', ['v' => \INF, 's' => "\xFF"]);
 
         Assert::same(self::attributes($this->rpc->getLastCall()['payload']), ['v' => 'INF', 's' => "\u{FFFD}"]);
+    }
+
+    public function testLogReplacesInvalidUtf8UpTo64NestingLevels(): void
+    {
+        $nest = static function (int $levels): array {
+            $value = "\xFF";
+            for ($i = 0; $i < $levels; ++$i) {
+                $value = ['x' => $value];
+            }
+
+            return $value;
+        };
+
+        $this->rpcLogger->info('Deep', ['kept' => $nest(63), 'dropped' => $nest(64)]);
+
+        Assert::same(\array_keys(self::attributes($this->rpc->getLastCall()['payload'])), ['kept']);
     }
 
     public function testLogStopsOnSelfReferencingArray(): void
