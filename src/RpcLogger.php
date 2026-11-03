@@ -82,7 +82,7 @@ class RpcLogger implements LoggerInterface
         /** @var mixed $value */
         foreach ($context as $key => $value) {
             /** @var mixed */
-            $result[\is_string($key) ? self::scrub($key) : $key] = match (true) {
+            $result[\is_string($key) ? self::attributeKey($key) : $key] = match (true) {
                 \is_string($value) => self::scrub($value),
                 \is_float($value) && !\is_finite($value) => (string) $value,
                 \is_array($value) => self::encodeArray($value),
@@ -91,6 +91,20 @@ class RpcLogger implements LoggerInterface
         }
 
         return $result;
+    }
+
+    /**
+     * RoadRunner writes attributes next to its own fields without deduplication, so a `level` attribute
+     * would make a second `level` key, and JSON readers keep the last one.
+     */
+    private static function attributeKey(string $key): string
+    {
+        $key = self::scrub($key);
+
+        return match ($key) {
+            'time', 'level', 'msg', 'logger' => 'context.' . $key,
+            default => $key,
+        };
     }
 
     /**
