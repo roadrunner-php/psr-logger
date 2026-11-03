@@ -194,6 +194,13 @@ final class RpcLoggerTest
         $this->rpcLogger->log(123, 'Test message');
     }
 
+    public function testLogWithIntBackedEnumLevelIsRejectedAsInvalidLevel(): void
+    {
+        Expect::exception(PsrInvalidArgumentException::class)->withMessageContaining('Invalid log level `7` provided.');
+
+        $this->rpcLogger->log(IntLevelEnum::Seven, 'Test message');
+    }
+
     public function testLogWithNullLevel(): void
     {
         Expect::exception(PsrInvalidArgumentException::class)->withMessageContaining('Invalid log level type provided.');
@@ -779,7 +786,8 @@ final class RpcLoggerTest
             $expected = ['x' => $expected];
         }
 
-        $this->rpcLogger->info('Deep', ['deep' => $value]);
+        $logger = new RpcLogger($this->appLogger, static fn(array $context): array => $context);
+        $logger->info('Deep', ['deep' => $value]);
 
         $attribute = self::attributes($this->rpc->getLastCall()['payload'])['deep'] ?? 'null';
         Assert::same(\json_decode($attribute, true), $expected);
