@@ -132,6 +132,29 @@ final class DefaultProcessorTest
         Assert::same($result['code'], 7);
     }
 
+    public function defaultProcessorConvertsPreviousExceptions(): void
+    {
+        $exception = new \RuntimeException('outer', 0, new \LogicException('middle', 0, new \Error('inner')));
+
+        $result = DefaultProcessor::createDefault()(['exception' => $exception]);
+
+        Assert::same($result['exception']['previous']['class'], \LogicException::class);
+        Assert::same($result['exception']['previous']['previous']['message'], 'inner');
+        Assert::false(\array_key_exists('previous', $result['exception']['previous']['previous']));
+    }
+
+    public function defaultProcessorStopsCycleOfPreviousExceptions(): void
+    {
+        $first = new \RuntimeException('first');
+        $second = new \LogicException('second', 0, $first);
+        (new \ReflectionProperty(\Exception::class, 'previous'))->setValue($first, $second);
+
+        $result = DefaultProcessor::createDefault()->withMaxDepth(3)(['exception' => $first]);
+
+        Assert::same($result['exception']['previous']['message'], 'second');
+        Assert::same($result['exception']['previous']['previous'], 'Over 3 levels deep, aborting normalization');
+    }
+
     public function defaultProcessorConvertsErrorToStructuredArray(): void
     {
         $result = DefaultProcessor::createDefault()(new \TypeError('wrong type'));

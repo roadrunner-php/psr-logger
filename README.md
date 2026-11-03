@@ -159,7 +159,7 @@ By default, `RpcLogger` uses `DefaultProcessor` which can handle:
 - Resources (converted to resource type description)
 - Objects via built-in object processors, tried in this order (the first one that accepts the object wins):
   - **DateTimeProcessor**: Converts `\DateTimeInterface` objects to ISO 8601 format (ATOM)
-  - **ThrowableProcessor**: Converts exceptions/errors to structured arrays with class, message, code, file, line, and trace
+  - **ThrowableProcessor**: Converts exceptions/errors to structured arrays with class, message, code, file, line, trace and the `previous` exception. The trace is one string with a line per frame as in `getTraceAsString()`, without arguments, cut to 8 frames by default and then ending with `... N more` for the dropped ones: pass another number to `new ThrowableProcessor(...)` and add it with `withObjectProcessors()` to change it
   - **JsonSerializableProcessor**: Converts `\JsonSerializable` objects to the data their `jsonSerialize()` returns, without the `@class` marker. The data goes through the same processors, so a date in it is formatted as above rather than as `json_encode()` would do it. An object that is also `\Stringable` is logged as this data, not as its string
   - **StringableProcessor**: Converts `\Stringable` objects to their string representation
   - **FallbackProcessor**: Converts any other objects to arrays with class name and public properties. Reference cycles are cut: a property pointing back to the object itself or to an object that contains it is left out, and an object reached again through an array is exported as its class name only
