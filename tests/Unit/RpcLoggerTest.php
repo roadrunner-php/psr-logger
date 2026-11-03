@@ -748,7 +748,7 @@ final class RpcLoggerTest
 
         $attributes = self::attributes($this->rpc->getLastCall()['payload']);
         Assert::same($attributes["k\u{FFFD}"], "v\u{FFFD}");
-        Assert::same($attributes['nested'], "{\"n\\ufffd\":\"w\\ufffd\"}");
+        Assert::same(\json_decode($attributes['nested'], true), ["n\u{FFFD}" => "w\u{FFFD}"]);
         Assert::same(\json_decode($attributes['exception'], true)['message'], "boom\u{FFFD}");
     }
 
