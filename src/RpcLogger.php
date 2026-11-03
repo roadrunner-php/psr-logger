@@ -69,29 +69,28 @@ class RpcLogger implements LoggerInterface
      *
      * Strings and keys get valid UTF-8 for protobuf, non-finite floats become strings for JSON.
      * Objects are left to app-logger.
-     *
-     * @param int<0, max> $levels Array levels left to descend into: stops on an array that contains
-     *        a reference to itself, which app-logger fails to encode anyway.
      */
-    private static function encodable(mixed $value, int $levels = 64): mixed
+    private static function encodable(mixed $context): mixed
     {
-        if (\is_string($value)) {
-            return self::scrub($value);
-        }
-
-        if (\is_float($value) && !\is_finite($value)) {
-            return (string) $value;
-        }
-
-        if (!\is_array($value) || $levels === 0) {
-            return $value;
+        if (!\is_array($context)) {
+            return $context;
         }
 
         $result = [];
-        /** @var mixed $item */
-        foreach ($value as $key => $item) {
+        /** @var mixed $value */
+        foreach ($context as $key => $value) {
             /** @var mixed */
-            $result[\is_string($key) ? self::scrub($key) : $key] = self::encodable($item, $levels - 1);
+            $result[\is_string($key) ? self::scrub($key) : $key] = match (true) {
+                \is_string($value) => self::scrub($value),
+                \is_float($value) && !\is_finite($value) => (string) $value,
+                // Encoded here rather than by app-logger to substitute invalid UTF-8 at any depth. With partial
+                // output a reference cycle becomes `null` and a non-finite float `0` instead of losing the attribute.
+                \is_array($value) => \json_encode(
+                    $value,
+                    \JSON_UNESCAPED_SLASHES | \JSON_UNESCAPED_UNICODE | \JSON_INVALID_UTF8_SUBSTITUTE | \JSON_PARTIAL_OUTPUT_ON_ERROR,
+                ),
+                default => $value,
+            };
         }
 
         return $result;
@@ -102,9 +101,17 @@ class RpcLogger implements LoggerInterface
      */
     private static function scrub(string $value): string
     {
-        // A JSON round trip instead of `mb_scrub()`, which would require ext-mbstring
-        return \preg_match('//u', $value) === 1
-            ? $value
-            : (string) \json_decode(\json_encode($value, \JSON_INVALID_UTF8_SUBSTITUTE | \JSON_THROW_ON_ERROR));
+        return \preg_match('//u', $value) === 1 ? $value : self::substituteInvalidUtf8($value);
+    }
+
+    /**
+     * A JSON round trip instead of `mb_scrub()`, which would require ext-mbstring.
+     */
+    private static function substituteInvalidUtf8(string $value): string
+    {
+        /** @var string $result A JSON string literal decodes to a string. */
+        $result = \json_decode(\json_encode($value, \JSON_INVALID_UTF8_SUBSTITUTE | \JSON_THROW_ON_ERROR));
+
+        return $result;
     }
 }
