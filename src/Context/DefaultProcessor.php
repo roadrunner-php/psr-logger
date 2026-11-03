@@ -6,6 +6,7 @@ namespace RoadRunner\PsrLogger\Context;
 
 use RoadRunner\PsrLogger\Context\ObjectProcessor\DateTimeProcessor;
 use RoadRunner\PsrLogger\Context\ObjectProcessor\FallbackProcessor;
+use RoadRunner\PsrLogger\Context\ObjectProcessor\JsonSerializableProcessor;
 use RoadRunner\PsrLogger\Context\ObjectProcessor\StringableProcessor;
 use RoadRunner\PsrLogger\Context\ObjectProcessor\ThrowableProcessor;
 
@@ -53,6 +54,8 @@ final class DefaultProcessor
             new DateTimeProcessor(),
             // Before StringableProcessor: every \Throwable is also \Stringable
             new ThrowableProcessor(),
+            // Before StringableProcessor: structured data reads better in a log than a string
+            new JsonSerializableProcessor(),
             new StringableProcessor(),
             new FallbackProcessor(),
         ];
@@ -139,17 +142,15 @@ final class DefaultProcessor
     private function processArray(array $value): array
     {
         $result = [];
-        $count = 0;
         /** @var mixed $item */
-        foreach ($value as $key => $item) {
-            if ($count === $this->maxItems) {
-                $result['...'] = \sprintf('Over %d items (%d total), aborting normalization', $this->maxItems, \count($value));
-                break;
-            }
-
+        foreach (\array_slice($value, 0, $this->maxItems, true) as $key => $item) {
             /** @var mixed */
             $result[$key] = $this($item);
-            ++$count;
+        }
+
+        $count = \count($value);
+        if ($count > $this->maxItems) {
+            $result['...'] = \sprintf('Over %d items (%d total), aborting normalization', $this->maxItems, $count);
         }
 
         return $result;
